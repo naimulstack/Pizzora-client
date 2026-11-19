@@ -1,20 +1,21 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Sun, Moon, Menu, X, UserRound } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  Sun,
+  Moon,
+  Menu,
+  X,
+  UserRound,
+} from "lucide-react";
 
 import DarkLogo from "../../app/Images/Pizzora Freshly Baked Logo.png";
 import BrightLogo from "../../app/Images/Pizzora_Pizz_Gold_Transparent.png";
-
-const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "Explore Menu", href: "/menu" },
-  { name: "Categories", href: "/categories" },
-  { name: "About Us", href: "/about" },
-  { name: "Contact", href: "/contact" },
-];
 
 const NavbarPage = () => {
   const [isDark, setIsDark] = useState(true);
@@ -28,31 +29,45 @@ const NavbarPage = () => {
     setIsDark(dark);
     document.documentElement.classList.toggle("dark", dark);
 
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
     window.addEventListener("scroll", handleScroll);
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
+
     setIsDark(newTheme);
     document.documentElement.classList.toggle("dark", newTheme);
     localStorage.setItem("theme", newTheme ? "dark" : "light");
   };
 
-  const navLinkClass = `text-sm font-medium transition hover:text-[#FEC447] ${
-    isDark ? "text-zinc-300" : "text-zinc-600"
-  }`;
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "Explore Menu", href: "/menu" },
+    { name: "Categories", href: "/categories" },
+    { name: "About Us", href: "/about" },
+    { name: "Contact", href: "/contact" },
+  ];
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b transition-all duration-300 ${
+      className={`sticky top-0 z-50 border-b transition-all duration-300${
         isDark
           ? "border-white/10 bg-[#09090B]/90 text-white"
           : "border-zinc-200 bg-white/90 text-zinc-900"
-      } ${scrolled ? "shadow-lg backdrop-blur-xl" : "backdrop-blur-md"}`}
+      } ${
+        scrolled
+          ? "shadow-lg backdrop-blur-xl"
+          : "backdrop-blur-md"
+      }`}
     >
       <nav className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-5 lg:px-8">
+
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
@@ -68,7 +83,13 @@ const NavbarPage = () => {
         {/* Desktop Links */}
         <div className="hidden items-center gap-7 lg:flex">
           {navLinks.map((link) => (
-            <Link key={link.name} href={link.href} className={navLinkClass}>
+            <Link
+              key={link.name}
+              href={link.href}
+              className={`text-sm font-medium transition hover:text-[#FEC447] ${
+                isDark ? "text-zinc-300" : "text-zinc-600"
+              }`}
+            >
               {link.name}
             </Link>
           ))}
@@ -127,7 +148,9 @@ const NavbarPage = () => {
       {isOpen && (
         <div
           className={`border-t px-5 py-5 lg:hidden ${
-            isDark ? "border-white/10 bg-[#09090B]" : "border-zinc-200 bg-white"
+            isDark
+              ? "border-white/10 bg-[#09090B]"
+              : "border-zinc-200 bg-white"
           }`}
         >
           <div className="flex flex-col gap-5">
@@ -136,14 +159,14 @@ const NavbarPage = () => {
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className={navLinkClass}
+                className="text-sm font-medium transition hover:text-[#FEC447]"
               >
                 {link.name}
               </Link>
             ))}
 
             <Link
-              href="/sign-in"
+              href="/login"
               onClick={() => setIsOpen(false)}
               className="rounded-full bg-[#FEC447] px-5 py-3 text-center font-bold text-black"
             >

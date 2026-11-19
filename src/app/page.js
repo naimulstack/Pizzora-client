@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { connection } from "next/server";
 import HeroSection from "@/components/homepage/banner";
 import BecomeVendor from "@/components/homepage/BecomeVendor";
 import FeaturedPizzas from "@/components/homepage/FeaturedPizzas";
@@ -18,6 +19,8 @@ export default function Home() {
 }
 
 async function HomeContent() {
+  await connection();
+
   return (
     <>
       <HeroSection />

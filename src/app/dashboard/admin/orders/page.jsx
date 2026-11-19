@@ -1,43 +1,97 @@
-
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   ShoppingBag,
   Clock,
   CheckCircle2,
   Truck,
-  XCircle,
   Eye,
   Filter,
 } from "lucide-react";
 
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
+
+const STATUS_STYLES = {
+  Pending: "bg-yellow-500/10 text-yellow-400",
+  Assigned: "bg-blue-500/10 text-blue-400",
+  Accepted: "bg-green-500/10 text-green-400",
+  Preparing: "bg-orange-500/10 text-orange-400",
+  Delivered: "bg-emerald-500/10 text-emerald-400",
+  Rejected: "bg-red-500/10 text-red-400",
+};
+
 const OrdersPage = () => {
+  const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
+  const [loading, setLoading] = useState(true);
 
-  const orders = [];
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/orders`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+        const data = await res.json();
+        setOrders(Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : []);
+      } catch {
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const statusStyles = {
-    Pending: "bg-yellow-500/10 text-yellow-400",
-    Assigned: "bg-blue-500/10 text-blue-400",
-    Accepted: "bg-green-500/10 text-green-400",
-    Preparing: "bg-orange-500/10 text-orange-400",
-    Delivered: "bg-emerald-500/10 text-emerald-400",
-    Rejected: "bg-red-500/10 text-red-400",
-  };
+    fetchOrders();
+  }, []);
 
   const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(search.toLowerCase()) ||
-      order.customer.toLowerCase().includes(search.toLowerCase());
+    const orderCode = String(order.orderId || order._id || "");
+    const customerName = String(order.customerName || order.customer || "");
+    const orderStatus = order.status || "Pending";
 
-    const matchesStatus =
-      status === "All" || order.status === status;
+    const matchesSearch =
+      orderCode.toLowerCase().includes(search.toLowerCase()) ||
+      customerName.toLowerCase().includes(search.toLowerCase());
+
+    const matchesStatus = status === "All" || orderStatus === status;
 
     return matchesSearch && matchesStatus;
   });
+
+  const stats = [
+    {
+      label: "Total Orders",
+      value: loading ? "..." : orders.length,
+      icon: ShoppingBag,
+    },
+    {
+      label: "Pending Orders",
+      value: loading
+        ? "..."
+        : orders.filter((o) => o.status === "Pending").length,
+      icon: Clock,
+    },
+    {
+      label: "Accepted Orders",
+      value: loading
+        ? "..."
+        : orders.filter((o) => o.status === "Accepted").length,
+      icon: CheckCircle2,
+    },
+    {
+      label: "Delivered Orders",
+      value: loading
+        ? "..."
+        : orders.filter((o) => o.status === "Delivered").length,
+      icon: Truck,
+    },
+  ];
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -54,16 +108,14 @@ const OrdersPage = () => {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: "Total Orders", value: "—", icon: ShoppingBag },
-          { label: "Pending Orders", value: "—", icon: Clock },
-          { label: "Accepted Orders", value: "—", icon: CheckCircle2 },
-          { label: "Delivered Orders", value: "—", icon: Truck },
-        ].map((item) => {
+        {stats.map((item) => {
           const Icon = item.icon;
 
           return (
-            <div key={item.label} className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+            <div
+              key={item.label}
+              className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5"
+            >
               <div className="flex justify-between">
                 <p className="text-sm text-zinc-400">{item.label}</p>
                 <Icon size={20} className="text-orange-400" />
@@ -103,7 +155,15 @@ const OrdersPage = () => {
                 onChange={(e) => setStatus(e.target.value)}
                 className="bg-transparent py-3 text-sm text-zinc-300 outline-none"
               >
-                {["All", "Pending", "Assigned", "Accepted", "Preparing", "Delivered", "Rejected"].map((item) => (
+                {[
+                  "All",
+                  "Pending",
+                  "Assigned",
+                  "Accepted",
+                  "Preparing",
+                  "Delivered",
+                  "Rejected",
+                ].map((item) => (
                   <option key={item} value={item} className="bg-zinc-900">
                     {item}
                   </option>
@@ -126,29 +186,56 @@ const OrdersPage = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
-              {filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-zinc-800/30">
-                    <td className="px-5 py-5 font-semibold text-orange-400">{order.id}</td>
-                    <td className="px-5 py-5 text-zinc-300">{order.customer}</td>
-                    <td className="px-5 py-5 text-zinc-400">{order.vendor || "Not assigned"}</td>
-                    <td className="px-5 py-5 text-white">{order.amount}</td>
-                    <td className="px-5 py-5">
-                      <span className={`rounded-full px-3 py-1 text-xs ${statusStyles[order.status] || ""}`}>
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-5">
-                      <button className="rounded-lg bg-zinc-800 p-2 text-zinc-300 hover:text-orange-400">
-                        <Eye size={17} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="px-5 py-14 text-center text-zinc-400">
+                    Loading orders...
+                  </td>
+                </tr>
+              ) : filteredOrders.length > 0 ? (
+                filteredOrders.map((order) => {
+                  const id = order._id;
+                  const displayId = order.orderId || `#${String(id).slice(-6).toUpperCase()}`;
+                  const customer = order.customerName || order.customer || "Customer";
+                  const vendor = order.vendor || order.vendorName || "Not assigned";
+                  const amount = order.totalPrice ?? order.amount ?? 0;
+                  const orderStatus = order.status || "Pending";
+
+                  return (
+                    <tr key={id} className="hover:bg-zinc-800/30">
+                      <td className="px-5 py-5 font-semibold text-orange-400">
+                        {displayId}
+                      </td>
+                      <td className="px-5 py-5 text-zinc-300">{customer}</td>
+                      <td className="px-5 py-5 text-zinc-400">{vendor}</td>
+                      <td className="px-5 py-5 text-white">৳{amount}</td>
+                      <td className="px-5 py-5">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs ${
+                            STATUS_STYLES[orderStatus] || ""
+                          }`}
+                        >
+                          {orderStatus}
+                        </span>
+                      </td>
+                      <td className="px-5 py-5">
+                        <button
+                          type="button"
+                          className="rounded-lg bg-zinc-800 p-2 text-zinc-300 hover:text-orange-400"
+                        >
+                          <Eye size={17} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan="6" className="px-5 py-16 text-center">
-                    <ShoppingBag size={35} className="mx-auto mb-3 text-zinc-600" />
+                    <ShoppingBag
+                      size={35}
+                      className="mx-auto mb-3 text-zinc-600"
+                    />
                     <p className="font-medium text-zinc-300">No orders found</p>
                     <p className="mt-1 text-sm text-zinc-500">
                       Customer orders will appear here.

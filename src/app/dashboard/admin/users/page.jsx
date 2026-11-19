@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,7 +17,7 @@ const API_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 ).replace(/\/$/, "");
 
-const roleStyles = {
+const ROLE_STYLES = {
   admin: "bg-purple-500/10 text-purple-400 border-purple-500/20",
   vendor: "bg-orange-500/10 text-orange-400 border-orange-500/20",
   customer: "bg-blue-500/10 text-blue-400 border-blue-500/20",
@@ -31,16 +30,15 @@ const AdminUsersPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-
-      const res = await fetch(`${API_URL}/users`);
-      const data = await res.json();
-      setUsers(data);
-      setLoading(false);
-    };
-
-    fetchUsers();
+    fetch(`${API_URL}/admin/users`, {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setUsers(Array.isArray(data) ? data : []);
+        setLoading(false);
+      });
   }, []);
 
   const filteredUsers = users.filter((user) => {
@@ -57,48 +55,37 @@ const AdminUsersPage = () => {
     return matchesSearch && matchesRole;
   });
 
-  const getJoinedDate = (date) => {
-    if (!date) return "N/A";
-
-    const parsedDate = new Date(date);
-
-    if (isNaN(parsedDate.getTime())) return "N/A";
-
-    return parsedDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
-  };
-
   const stats = [
     {
       label: "Total Users",
-      value: users.length,
+      value: loading ? "..." : users.length,
       icon: Users,
       color: "text-blue-400",
     },
     {
       label: "Customers",
-      value: users.filter(
-        (user) => (user.role || "customer").toLowerCase() === "customer"
-      ).length,
+      value: loading
+        ? "..."
+        : users.filter((u) => (u.role || "customer").toLowerCase() === "customer")
+            .length,
       icon: UserRound,
       color: "text-cyan-400",
     },
     {
       label: "Vendors",
-      value: users.filter(
-        (user) => (user.role || "customer").toLowerCase() === "vendor"
-      ).length,
+      value: loading
+        ? "..."
+        : users.filter((u) => (u.role || "customer").toLowerCase() === "vendor")
+            .length,
       icon: Store,
       color: "text-orange-400",
     },
     {
       label: "Admins",
-      value: users.filter(
-        (user) => (user.role || "customer").toLowerCase() === "admin"
-      ).length,
+      value: loading
+        ? "..."
+        : users.filter((u) => (u.role || "customer").toLowerCase() === "admin")
+            .length,
       icon: ShieldCheck,
       color: "text-purple-400",
     },
@@ -197,67 +184,75 @@ const AdminUsersPage = () => {
                       Loading users...
                     </td>
                   </tr>
+                ) : filteredUsers.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-12 text-center text-zinc-500"
+                    >
+                      No users found.
+                    </td>
+                  </tr>
                 ) : (
-                  <>
-                    {filteredUsers.map((user) => {
-                      const name = user.name || "Unknown User";
-                      const role = (user.role || "customer").toLowerCase();
+                  filteredUsers.map((user) => {
+                    const name = user.name || "Unknown User";
+                    const role = (user.role || "customer").toLowerCase();
 
-                      return (
-                        <tr
-                          key={user.id || user._id}
-                          className="transition hover:bg-zinc-800/30"
-                        >
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10 font-semibold text-orange-400">
-                                {name.charAt(0).toUpperCase()}
-                              </div>
-                              <span className="font-medium">{name}</span>
+                    return (
+                      <tr
+                        key={user._id || user.id}
+                        className="transition hover:bg-zinc-800/30"
+                      >
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10 font-semibold text-orange-400">
+                              {name.charAt(0).toUpperCase()}
                             </div>
-                          </td>
+                            <span className="font-medium">{name}</span>
+                          </div>
+                        </td>
 
-                          <td className="px-6 py-5 text-zinc-400">
-                            <span className="flex items-center gap-2">
-                              <Mail size={15} />
-                              {user.email || "No email"}
-                            </span>
-                          </td>
+                        <td className="px-6 py-5 text-zinc-400">
+                          <span className="flex items-center gap-2">
+                            <Mail size={15} />
+                            {user.email || "No email"}
+                          </span>
+                        </td>
 
-                          <td className="px-6 py-5">
-                            <span
-                              className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                                roleStyles[role] || roleStyles.customer
-                              }`}
-                            >
-                              {role.charAt(0).toUpperCase() + role.slice(1)}
-                            </span>
-                          </td>
+                        <td className="px-6 py-5">
+                          <span
+                            className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                              ROLE_STYLES[role] || ROLE_STYLES.customer
+                            }`}
+                          >
+                            {role.charAt(0).toUpperCase() + role.slice(1)}
+                          </span>
+                        </td>
 
-                          <td className="px-6 py-5 text-zinc-400">
-                            {getJoinedDate(user.createdAt)}
-                          </td>
+                        <td className="px-6 py-5 text-zinc-400">
+                          {user.createdAt
+                            ? new Date(user.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                }
+                              )
+                            : "N/A"}
+                        </td>
 
-                          <td className="px-6 py-5 text-right">
-                            <button className="rounded-lg p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-white">
-                              <MoreHorizontal size={19} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-
-                    {filteredUsers.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan={5}
-                          className="px-6 py-12 text-center text-zinc-500"
-                        >
-                          No users found.
+                        <td className="px-6 py-5 text-right">
+                          <button
+                            type="button"
+                            className="rounded-lg p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-white"
+                          >
+                            <MoreHorizontal size={19} />
+                          </button>
                         </td>
                       </tr>
-                    )}
-                  </>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -270,15 +265,20 @@ const AdminUsersPage = () => {
 
             <div className="flex gap-2">
               <button
+                type="button"
                 disabled
                 className="rounded-lg border border-zinc-800 p-2 text-zinc-600"
               >
                 <ChevronLeft size={17} />
               </button>
-              <button className="rounded-lg bg-orange-500 px-3 py-1.5 text-sm font-semibold text-black">
+              <button
+                type="button"
+                className="rounded-lg bg-orange-500 px-3 py-1.5 text-sm font-semibold text-black"
+              >
                 1
               </button>
               <button
+                type="button"
                 disabled
                 className="rounded-lg border border-zinc-800 p-2 text-zinc-600"
               >

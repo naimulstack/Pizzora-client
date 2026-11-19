@@ -2,7 +2,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 import {
   Plus,
   Search,
@@ -15,65 +16,90 @@ import {
   XCircle,
 } from "lucide-react";
 
-const pizzas = [
-  {
-    id: 1,
-    name: "Margherita Pizza",
-    category: "Classic",
-    price: 450,
-    status: "Approved",
-    image:
-      "https://images.unsplash.com/photo-1579751626657-72bc17010498?w=500",
-    date: "Nov 15, 2026",
-  },
-  {
-    id: 2,
-    name: "Pepperoni Pizza",
-    category: "Non-Veg",
-    price: 650,
-    status: "Pending",
-    image:
-      "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=500",
-    date: "Nov 17, 2026",
-  },
-  {
-    id: 3,
-    name: "BBQ Chicken Pizza",
-    category: "Non-Veg",
-    price: 750,
-    status: "Rejected",
-    image:
-      "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500",
-    date: "Nov 18, 2026",
-  },
-];
-
 const statusStyle = {
-  Approved: "bg-green-500/10 text-green-400 border-green-500/20",
-  Pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  Rejected: "bg-red-500/10 text-red-400 border-red-500/20",
+  approved: "bg-green-500/10 text-green-400 border-green-500/20",
+  pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+  rejected: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
 const statusIcon = {
-  Approved: CheckCircle2,
-  Pending: Clock,
-  Rejected: XCircle,
+  approved: CheckCircle2,
+  pending: Clock,
+  rejected: XCircle,
 };
 
 export default function MyPizzasPage() {
+  const [pizzas, setPizzas] = useState([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchMyPizzas = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const { token } = await authClient.token();
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/vendor/pizzas`,
+          {
+            cache: "no-store",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to load your pizzas");
+        }
+
+        const data = await res.json();
+        setPizzas(data);
+      } catch (error) {
+        console.error("Pizza Fetch Error:", error);
+        setError(error.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyPizzas();
+  }, []);
+
+  const getStatus = (status) => {
+    return status?.toLowerCase() || "pending";
+  };
 
   const filteredPizzas = pizzas.filter((pizza) => {
     const matchesSearch = pizza.name
-      .toLowerCase()
+      ?.toLowerCase()
       .includes(search.toLowerCase());
 
     const matchesFilter =
-      filter === "All" || pizza.status === filter;
+      filter === "All" || getStatus(pizza.status) === filter.toLowerCase();
 
     return matchesSearch && matchesFilter;
   });
+
+  const statistics = [
+    { label: "Total Pizzas", value: pizzas.length },
+    {
+      label: "Approved",
+      value: pizzas.filter((p) => getStatus(p.status) === "approved").length,
+    },
+    {
+      label: "Pending",
+      value: pizzas.filter((p) => getStatus(p.status) === "pending").length,
+    },
+    {
+      label: "Rejected",
+      value: pizzas.filter((p) => getStatus(p.status) === "rejected").length,
+    },
+  ];
 
   return (
     <div className="min-h-screen p-6 md:p-10">
@@ -96,21 +122,7 @@ export default function MyPizzasPage() {
 
       {/* Statistics */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: "Total Pizzas", value: pizzas.length },
-          {
-            label: "Approved",
-            value: pizzas.filter((p) => p.status === "Approved").length,
-          },
-          {
-            label: "Pending",
-            value: pizzas.filter((p) => p.status === "Pending").length,
-          },
-          {
-            label: "Rejected",
-            value: pizzas.filter((p) => p.status === "Rejected").length,
-          },
-        ].map((item) => (
+        {statistics.map((item) => (
           <div
             key={item.label}
             className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5"
@@ -154,7 +166,15 @@ export default function MyPizzasPage() {
           <h2 className="font-bold">Pizza Listings</h2>
         </div>
 
-        {filteredPizzas.length === 0 ? (
+        {loading ? (
+          <div className="p-12 text-center text-zinc-400">
+            Loading your pizzas...
+          </div>
+        ) : error ? (
+          <div className="p-12 text-center text-red-400">
+            {error}
+          </div>
+        ) : filteredPizzas.length === 0 ? (
           <div className="p-12 text-center">
             <Pizza className="mx-auto text-zinc-600" size={40} />
             <p className="mt-4 text-zinc-400">No pizzas found.</p>
@@ -162,11 +182,12 @@ export default function MyPizzasPage() {
         ) : (
           <div className="divide-y divide-zinc-800">
             {filteredPizzas.map((pizza) => {
-              const Icon = statusIcon[pizza.status];
+              const status = getStatus(pizza.status);
+              const Icon = statusIcon[status] || Clock;
 
               return (
                 <div
-                  key={pizza.id}
+                  key={pizza._id}
                   className="flex flex-col gap-5 p-5 transition hover:bg-zinc-800/30 md:flex-row md:items-center"
                 >
                   <img
@@ -178,7 +199,10 @@ export default function MyPizzasPage() {
                   <div className="min-w-0 flex-1">
                     <h3 className="font-bold">{pizza.name}</h3>
                     <p className="mt-1 text-sm text-zinc-500">
-                      {pizza.category} · Added {pizza.date}
+                      {pizza.category} · Added{" "}
+                      {pizza.createdAt
+                        ? new Date(pizza.createdAt).toLocaleDateString()
+                        : "Recently"}
                     </p>
                     <p className="mt-2 font-semibold text-[#FEC447]">
                       ৳{pizza.price}
@@ -187,10 +211,12 @@ export default function MyPizzasPage() {
 
                   <div className="flex flex-wrap items-center gap-3">
                     <span
-                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${statusStyle[pizza.status]}`}
+                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${
+                        statusStyle[status] || statusStyle.pending
+                      }`}
                     >
                       <Icon size={14} />
-                      {pizza.status}
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
                     </span>
 
                     <button

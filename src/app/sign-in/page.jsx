@@ -11,6 +11,7 @@ import {
   FaEye,
   FaEyeSlash,
   FaArrowRight,
+  FaGoogle,
 } from "react-icons/fa6";
 import { authClient } from "@/lib/auth-client";
 import { FcGoogle } from "react-icons/fc";
@@ -33,45 +34,55 @@ const SignInPage = () => {
     const password = formData.get("password");
     const rememberMe = formData.get("rememberMe") === "on";
 
-    const { error } = await authClient.signIn.email({
-      email,
-      password,
-      rememberMe,
-    });
+    try {
+      const { error } = await authClient.signIn.email({
+        email,
+        password,
+        rememberMe,
+      });
 
-    if (error) {
-      toast.error(error.message || "Invalid email or password.");
+      if (error) {
+        toast.error(error.message || "Invalid email or password.");
+        return;
+      }
+
+      const { data: session } = await authClient.getSession();
+      const role = session?.user?.role;
+      toast.success("Welcome back to Pizzora!");
+      if (role === "admin") {
+        router.push("/dashboard/admin");
+      } else if (role === "vendor") {
+        router.push("/dashboard/vendor");
+      } else {
+        router.push("/");
+      }
+      router.refresh();
+      
+
+    } catch (error) {
+      toast.error(error.message || "Something went wrong.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const { data: session } = await authClient.getSession();
-    const role = session?.user?.role;
-    toast.success("Welcome back to Pizzora!");
-    if (role === "admin") {
-      router.push("/dashboard/admin");
-    } else if (role === "vendor") {
-      router.push("/dashboard/vendor");
-    } else {
-      router.push("/");
-    }
-    router.refresh();
-    setLoading(false);
   };
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
 
-    const { error } = await authClient.signIn.social({
-      provider: "google",
-      callbackURL: "/",
-    });
+    try {
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
 
-    if (error) {
-      toast.error(error.message || "Google login failed.");
+      if (error) {
+        toast.error(error.message || "Google login failed.");
+        setGoogleLoading(false);
+      }
+    } catch (error) {
+      toast.error(error.message || "Something went wrong.");
+      setGoogleLoading(false);
     }
-
-    setGoogleLoading(false);
   };
 
   return (

@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import {
-    Plus,
     Pizza,
     Pencil,
     Trash2,
+    ClipboardList,
     Search,
     Loader2,
     ArrowLeft,
@@ -34,10 +34,20 @@ export default function AllPizzasPage() {
     const [search, setSearch] = useState("");
 
     const fetchPizzas = async () => {
-        const res = await fetch(`${API_URL}/pizzas`);
-        const data = await res.json();
-        setPizzas(data);
-        setLoading(false);
+        try {
+            const res = await fetch(`${API_URL}/pizzas`);
+
+            if (!res.ok) {
+                throw new Error("Failed to fetch pizzas");
+            }
+
+            const data = await res.json();
+            setPizzas(data);
+        } catch (error) {
+            toast.error("Failed to load pizzas");
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -45,20 +55,23 @@ export default function AllPizzasPage() {
     }, []);
 
     const handleDelete = async (id) => {
-        const res = await fetch(`${API_URL}/pizzas/${id}`, {
-            method: "DELETE",
-        });
+        try {
+            const res = await fetch(`${API_URL}/pizzas/${id}`, {
+                method: "DELETE",
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        if (!res.ok) {
-            toast.error(data.message || "Delete failed");
-            return;
+            if (!res.ok) {
+                throw new Error(data.message || "Delete failed");
+            }
+
+            setPizzas((prev) => prev.filter((pizza) => pizza._id !== id));
+
+            toast.success("Pizza deleted successfully");
+        } catch (error) {
+            toast.error(error.message);
         }
-
-        setPizzas((prev) => prev.filter((pizza) => pizza._id !== id));
-
-        toast.success("Pizza deleted successfully");
     };
 
     const filteredPizzas = pizzas.filter((pizza) =>
@@ -69,7 +82,7 @@ export default function AllPizzasPage() {
 
     return (
         <main className="min-h-screen bg-[#09090b] p-5 text-white md:p-8">
-            <div className="mx-auto max-w-7xl space-y-8">
+            <div className="mx-auto max-w-7xl space-y-7">
 
                 <Link
                     href="/dashboard/admin"
@@ -95,11 +108,11 @@ export default function AllPizzasPage() {
                     </div>
 
                     <Link
-                        href="/dashboard/admin/pizzas/add"
+                        href="/dashboard/admin/pizza-requests"
                         className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-black transition hover:bg-orange-400"
                     >
-                        <Plus size={18} />
-                        Add New Pizza
+                        <ClipboardList size={18} />
+                        Review Requests
                     </Link>
                 </div>
 
@@ -224,15 +237,7 @@ export default function AllPizzasPage() {
                                             </td>
 
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Link
-                                                        href={`/dashboard/admin/pizzas/edit/${pizza._id}`}
-                                                        className="rounded-lg border border-zinc-700 p-2 text-blue-400 transition hover:bg-blue-500/10"
-                                                        title="Edit Pizza"
-                                                    >
-                                                        <Pencil size={16} />
-                                                    </Link>
-
+                                                <div className="">
 
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>

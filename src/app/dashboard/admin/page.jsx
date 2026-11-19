@@ -1,118 +1,122 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Users,
   ShoppingBag,
   Pizza,
   Store,
   TrendingUp,
-  TrendingDown,
   ArrowUpRight,
   Clock,
   CheckCircle2,
   Truck,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+const STATUS_STYLES = {
+  Delivered: "bg-green-500/10 text-green-400",
+  Preparing: "bg-orange-500/10 text-orange-400",
+  "On the way": "bg-blue-500/10 text-blue-400",
+  Cancelled: "bg-red-500/10 text-red-400",
+};
 
 const AdminDashboard = () => {
-  const [dashboardStats, setDashboardStats] = useState({
+  const [data, setData] = useState({
+    pendingPizzas: 0,
+    totalOrders: 0,
     totalUsers: 0,
     totalPizzas: 0,
+    totalVendors: 0,
+    orderSummary: {},
+    monthlySales: [],
+    recentOrders: [],
   });
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/admin/stats`
-      );
-      const data = await res.json();
-
-      setDashboardStats(data);
-      setLoading(false);
-    };
-
-    fetchStats();
+    fetch(`${API_URL}/admin/stats`, {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        setData(result);
+        setLoading(false);
+      });
   }, []);
 
   const stats = [
     {
-      title: "Total Revenue",
-      value: "$12,450",
-      change: "+12.5%",
-      positive: true,
-      icon: TrendingUp,
+      title: "Pending Pizzas",
+      value: loading ? "..." : (data.pendingPizzas || 0).toLocaleString(),
+      change: "Needs Review",
+      icon: Clock,
       color: "text-orange-400",
       bg: "bg-orange-500/10",
     },
     {
       title: "Total Orders",
-      value: "1,248",
-      change: "+8.2%",
-      positive: true,
+      value: loading ? "..." : (data.totalOrders || 0).toLocaleString(),
+      change: "Live Data",
       icon: ShoppingBag,
       color: "text-blue-400",
       bg: "bg-blue-500/10",
     },
     {
       title: "Total Users",
-      value: loading ? "..." : dashboardStats.totalUsers.toLocaleString(),
+      value: loading ? "..." : (data.totalUsers || 0).toLocaleString(),
       change: "Live Data",
-      positive: true,
       icon: Users,
       color: "text-purple-400",
       bg: "bg-purple-500/10",
     },
     {
       title: "Total Pizzas",
-      value: loading ? "..." : dashboardStats.totalPizzas.toLocaleString(),
+      value: loading ? "..." : (data.totalPizzas || 0).toLocaleString(),
       change: "Live Data",
-      positive: true,
       icon: Pizza,
       color: "text-green-400",
       bg: "bg-green-500/10",
     },
   ];
 
-  const orders = [
+  const totalOrdersCount = data.totalOrders || 1;
+  const getPercentage = (status) =>
+    data.totalOrders
+      ? Math.round(((data.orderSummary?.[status] || 0) / totalOrdersCount) * 100)
+      : 0;
+
+  const orderSummaryList = [
     {
-      id: "#PZ-1024",
-      customer: "John Smith",
-      pizza: "Margherita Pizza",
-      amount: "$24.00",
-      status: "Delivered",
+      label: "Delivered",
+      value: getPercentage("Delivered"),
+      color: "bg-green-500",
+      icon: CheckCircle2,
     },
     {
-      id: "#PZ-1023",
-      customer: "Sarah Wilson",
-      pizza: "Pepperoni Pizza",
-      amount: "$32.00",
-      status: "Preparing",
+      label: "Preparing",
+      value: getPercentage("Preparing"),
+      color: "bg-orange-500",
+      icon: Clock,
     },
     {
-      id: "#PZ-1022",
-      customer: "Michael Brown",
-      pizza: "BBQ Chicken Pizza",
-      amount: "$28.50",
-      status: "On the way",
+      label: "On the way",
+      value: getPercentage("On the way"),
+      color: "bg-blue-500",
+      icon: Truck,
     },
     {
-      id: "#PZ-1021",
-      customer: "Emma Davis",
-      pizza: "Cheese Lovers Pizza",
-      amount: "$19.00",
-      status: "Cancelled",
+      label: "Cancelled",
+      value: getPercentage("Cancelled"),
+      color: "bg-red-500",
+      icon: XCircle,
     },
   ];
 
-  const statusStyles = {
-    Delivered: "bg-green-500/10 text-green-400",
-    Preparing: "bg-orange-500/10 text-orange-400",
-    "On the way": "bg-blue-500/10 text-blue-400",
-    Cancelled: "bg-red-500/10 text-red-400",
-  };
+  const maxSale = Math.max(...(data.monthlySales || []).map((m) => m.total), 1);
 
   return (
     <main className="min-h-screen bg-[#09090b] p-5 text-white md:p-8">
@@ -138,7 +142,6 @@ const AdminDashboard = () => {
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {stats.map((item) => {
             const Icon = item.icon;
-
             return (
               <div
                 key={item.title}
@@ -148,20 +151,11 @@ const AdminDashboard = () => {
                   <div className={`rounded-xl p-3 ${item.bg}`}>
                     <Icon size={21} className={item.color} />
                   </div>
-
-                  <span
-                    className={`flex items-center gap-1 text-xs font-medium ${item.positive ? "text-green-400" : "text-red-400"
-                      }`}
-                  >
-                    {item.positive ? (
-                      <TrendingUp size={14} />
-                    ) : (
-                      <TrendingDown size={14} />
-                    )}
+                  <span className="flex items-center gap-1 text-xs font-medium text-green-400">
+                    <TrendingUp size={14} />
                     {item.change}
                   </span>
                 </div>
-
                 <p className="mt-5 text-sm text-zinc-400">{item.title}</p>
                 <h2 className="mt-1 text-3xl font-bold">{item.value}</h2>
               </div>
@@ -178,71 +172,49 @@ const AdminDashboard = () => {
                   Monthly revenue performance
                 </p>
               </div>
-
-              <select className="rounded-lg border border-zinc-800 bg-[#09090b] px-3 py-2 text-sm text-zinc-300 outline-none">
-                <option>Last 7 months</option>
-                <option>This year</option>
-              </select>
+              <span className="rounded-lg border border-zinc-800 bg-[#09090b] px-3 py-2 text-sm text-zinc-300">
+                Last 7 months
+              </span>
             </div>
 
-            <div className="mt-8 flex h-56 items-end justify-between gap-3 border-b border-zinc-800 px-2">
-              {[45, 65, 50, 80, 60, 95, 72].map((height, index) => (
-                <div
-                  key={index}
-                  className="flex h-full flex-1 flex-col justify-end"
-                >
-                  <div
-                    style={{ height: `${height}%` }}
-                    className="w-full rounded-t-lg bg-orange-500/80 transition hover:bg-orange-400"
-                  />
+            {data.monthlySales?.length > 0 ? (
+              <>
+                <div className="mt-8 flex h-56 items-end justify-between gap-3 border-b border-zinc-800 px-2">
+                  {data.monthlySales.map((item) => (
+                    <div
+                      key={item.month}
+                      className="flex h-full flex-1 flex-col justify-end"
+                    >
+                      <div
+                        style={{
+                          height: `${Math.max((item.total / maxSale) * 100, 8)}%`,
+                        }}
+                        className="w-full rounded-t-lg bg-orange-500/80 transition hover:bg-orange-400"
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="mt-3 flex justify-between text-xs text-zinc-500">
-              {["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"].map(
-                (month) => (
-                  <span key={month}>{month}</span>
-                )
-              )}
-            </div>
+                <div className="mt-3 flex justify-between text-xs text-zinc-500">
+                  {data.monthlySales.map((item) => (
+                    <span key={item.month}>{item.month}</span>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="flex h-64 items-center justify-center text-sm text-zinc-500">
+                {loading ? "Loading chart..." : "No sales data available yet."}
+              </div>
+            )}
           </div>
 
           <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
             <h2 className="text-lg font-semibold">Order Summary</h2>
-            <p className="mt-1 text-sm text-zinc-500">
-              Current order status
-            </p>
+            <p className="mt-1 text-sm text-zinc-500">Current order status</p>
 
             <div className="mt-7 space-y-6">
-              {[
-                {
-                  label: "Delivered",
-                  value: 68,
-                  color: "bg-green-500",
-                  icon: CheckCircle2,
-                },
-                {
-                  label: "Preparing",
-                  value: 20,
-                  color: "bg-orange-500",
-                  icon: Clock,
-                },
-                {
-                  label: "On the way",
-                  value: 9,
-                  color: "bg-blue-500",
-                  icon: Truck,
-                },
-                {
-                  label: "Cancelled",
-                  value: 3,
-                  color: "bg-red-500",
-                  icon: XCircle,
-                },
-              ].map((item) => {
+              {orderSummaryList.map((item) => {
                 const Icon = item.icon;
-
                 return (
                   <div key={item.label}>
                     <div className="mb-2 flex items-center justify-between text-sm">
@@ -252,7 +224,6 @@ const AdminDashboard = () => {
                       </span>
                       <span className="font-semibold">{item.value}%</span>
                     </div>
-
                     <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
                       <div
                         className={`h-full rounded-full ${item.color}`}
@@ -274,7 +245,6 @@ const AdminDashboard = () => {
                 Latest customer orders
               </p>
             </div>
-
             <button className="flex items-center gap-1 text-sm font-medium text-orange-400 transition hover:text-orange-300">
               View all <ArrowUpRight size={16} />
             </button>
@@ -291,34 +261,47 @@ const AdminDashboard = () => {
                   <th className="px-6 py-4">Status</th>
                 </tr>
               </thead>
-
               <tbody className="divide-y divide-zinc-800">
-                {orders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="transition hover:bg-zinc-800/30"
-                  >
-                    <td className="px-6 py-5 font-medium text-orange-400">
-                      {order.id}
-                    </td>
-                    <td className="px-6 py-5 text-zinc-300">
-                      {order.customer}
-                    </td>
-                    <td className="px-6 py-5 text-zinc-400">
-                      {order.pizza}
-                    </td>
-                    <td className="px-6 py-5 font-medium">
-                      {order.amount}
-                    </td>
-                    <td className="px-6 py-5">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${statusStyles[order.status]}`}
-                      >
-                        {order.status}
-                      </span>
+                {data.recentOrders?.length > 0 ? (
+                  data.recentOrders.map((order) => (
+                    <tr
+                      key={order._id}
+                      className="transition hover:bg-zinc-800/30"
+                    >
+                      <td className="px-6 py-5 font-medium text-orange-400">
+                        #{order._id.slice(-6).toUpperCase()}
+                      </td>
+                      <td className="px-6 py-5 text-zinc-300">
+                        {order.customerName || "Customer"}
+                      </td>
+                      <td className="px-6 py-5 text-zinc-400">
+                        {order.pizzaName || "Pizza Item"}
+                      </td>
+                      <td className="px-6 py-5 font-medium">
+                        ৳{order.totalPrice || 0}
+                      </td>
+                      <td className="px-6 py-5">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${
+                            STATUS_STYLES[order.status] ||
+                            "bg-zinc-800 text-zinc-300"
+                          }`}
+                        >
+                          {order.status || "Preparing"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-10 text-center text-zinc-500"
+                    >
+                      {loading ? "Loading orders..." : "No recent orders yet."}
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -337,7 +320,9 @@ const AdminDashboard = () => {
                 </p>
               </div>
             </div>
-            <p className="mt-5 text-2xl font-bold">24</p>
+            <p className="mt-5 text-2xl font-bold">
+              {loading ? "..." : data.totalVendors || 0}
+            </p>
             <p className="mt-1 text-xs text-zinc-500">Registered vendors</p>
           </div>
 
@@ -353,7 +338,9 @@ const AdminDashboard = () => {
                 </p>
               </div>
             </div>
-            <p className="mt-5 text-2xl font-bold">48</p>
+            <p className="mt-5 text-2xl font-bold">
+              {loading ? "..." : data.totalPizzas || 0}
+            </p>
             <p className="mt-1 text-xs text-zinc-500">Available pizza items</p>
           </div>
         </section>
