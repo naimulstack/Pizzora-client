@@ -96,14 +96,9 @@ export default function AddPizzaPage() {
 
     setLoading(true);
 
-    try {
-      // API connection will be added in the next step.
-      toast.success("Pizza form completed! API connection is pending.");
-    } catch (error) {
-      toast.error("Something went wrong!");
-    } finally {
-      setLoading(false);
-    }
+    // API connection will be added in the next step.
+    toast.success("Pizza form completed! API connection is pending.");
+    setLoading(false);
   };
 
   return (

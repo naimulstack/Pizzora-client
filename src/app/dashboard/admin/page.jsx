@@ -25,23 +25,13 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/admin/stats`
-        );
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/admin/stats`
+      );
+      const data = await res.json();
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch dashboard stats");
-        }
-
-        const data = await res.json();
-
-        setDashboardStats(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+      setDashboardStats(data);
+      setLoading(false);
     };
 
     fetchStats();

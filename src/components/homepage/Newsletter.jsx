@@ -44,7 +44,7 @@ const Newsletter = () => {
                   type="email"
                   required
                   placeholder="Enter your email address..."
-                  className="h-14 w-full rounded-full border border-white/30 bg-white pl-12 pr-5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:ring-2 focus:ring-[#FEC447]"
+                  className="h-14 w-full rounded-full border border-white/30 bg-white pl-12 pr-5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 focus:ring-2 focus:ring-[#FEC447] dark:border-white/10 dark:bg-[#09090B] dark:text-white dark:placeholder:text-zinc-500"
                 />
               </div>
 

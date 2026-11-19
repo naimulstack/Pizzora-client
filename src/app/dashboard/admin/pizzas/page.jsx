@@ -34,20 +34,10 @@ export default function AllPizzasPage() {
     const [search, setSearch] = useState("");
 
     const fetchPizzas = async () => {
-        try {
-            const res = await fetch(`${API_URL}/pizzas`);
-
-            if (!res.ok) {
-                throw new Error("Failed to fetch pizzas");
-            }
-
-            const data = await res.json();
-            setPizzas(data);
-        } catch (error) {
-            toast.error("Failed to load pizzas");
-        } finally {
-            setLoading(false);
-        }
+        const res = await fetch(`${API_URL}/pizzas`);
+        const data = await res.json();
+        setPizzas(data);
+        setLoading(false);
     };
 
     useEffect(() => {
@@ -55,23 +45,20 @@ export default function AllPizzasPage() {
     }, []);
 
     const handleDelete = async (id) => {
-        try {
-            const res = await fetch(`${API_URL}/pizzas/${id}`, {
-                method: "DELETE",
-            });
+        const res = await fetch(`${API_URL}/pizzas/${id}`, {
+            method: "DELETE",
+        });
 
-            const data = await res.json();
+        const data = await res.json();
 
-            if (!res.ok) {
-                throw new Error(data.message || "Delete failed");
-            }
-
-            setPizzas((prev) => prev.filter((pizza) => pizza._id !== id));
-
-            toast.success("Pizza deleted successfully");
-        } catch (error) {
-            toast.error(error.message);
+        if (!res.ok) {
+            toast.error(data.message || "Delete failed");
+            return;
         }
+
+        setPizzas((prev) => prev.filter((pizza) => pizza._id !== id));
+
+        toast.success("Pizza deleted successfully");
     };
 
     const filteredPizzas = pizzas.filter((pizza) =>
@@ -82,7 +69,7 @@ export default function AllPizzasPage() {
 
     return (
         <main className="min-h-screen bg-[#09090b] p-5 text-white md:p-8">
-            <div className="mx-auto max-w-7xl space-y-7">
+            <div className="mx-auto max-w-7xl space-y-8">
 
                 <Link
                     href="/dashboard/admin"

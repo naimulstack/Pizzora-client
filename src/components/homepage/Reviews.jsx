@@ -36,7 +36,7 @@ const Reviews = () => {
 
         {/* Heading */}
         <div className="mb-12 text-center">
-          <span className="inline-flex rounded-full bg-[#FFF0D2] px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[#A65B00]">
+          <span className="inline-flex rounded-full bg-[#FFF0D2] px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[#A65B00] dark:bg-[#18181B] dark:text-[#FEC447]">
             Sample Customer Reviews • Preview
           </span>
 

@@ -40,43 +40,35 @@ const SignUpPage = () => {
     const email = formData.get("email");
     const password = formData.get("password");
 
-    try {
-      const { error } = await authClient.signUp.email({
-        name,
-        email,
-        password,
-        callbackURL: "/",
-      });
+    const { error } = await authClient.signUp.email({
+      name,
+      email,
+      password,
+      callbackURL: "/",
+    });
 
-      if (error) {
-        setError(error.message || "Signup failed. Please try again.");
-        return;
-      }
-
-      toast.success("Welcome to Pizzora!");
-      router.push("/");
-      router.refresh();
-    } catch (err) {
-      setError(err.message || "Something went wrong.");
-    } finally {
+    if (error) {
+      setError(error.message || "Signup failed. Please try again.");
       setLoading(false);
+      return;
     }
+
+    toast.success("Welcome to Pizzora!");
+    router.push("/");
+    router.refresh();
+    setLoading(false);
   };
 
   const handleGoogleSignUp = async () => {
     setError("");
 
-    try {
-      const { error } = await authClient.signIn.social({
-        provider: "google",
-        callbackURL: "/",
-      });
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
 
-      if (error) {
-        setError(error.message || "Google signup failed.");
-      }
-    } catch (err) {
-      setError(err.message || "Something went wrong.");
+    if (error) {
+      setError(error.message || "Google signup failed.");
     }
   };
 

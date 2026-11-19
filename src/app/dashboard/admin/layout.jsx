@@ -2,6 +2,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import AdminShell from "@/components/admin/AdminShell";
 
 export default async function AdminLayout({ children }) {
   const session = await auth.api.getSession({
@@ -16,5 +17,5 @@ export default async function AdminLayout({ children }) {
     redirect("/");
   }
 
-  return <>{children}</>;
+  return <AdminShell>{children}</AdminShell>;
 }

@@ -29,27 +29,15 @@ const AdminUsersPage = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        setError("");
+      setLoading(true);
 
-        const res = await fetch(`${API_URL}/users`);
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch users.");
-        }
-
-        const data = await res.json();
-        setUsers(data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
+      const res = await fetch(`${API_URL}/users`);
+      const data = await res.json();
+      setUsers(data);
+      setLoading(false);
     };
 
     fetchUsers();
@@ -207,15 +195,6 @@ const AdminUsersPage = () => {
                       className="px-6 py-12 text-center text-zinc-400"
                     >
                       Loading users...
-                    </td>
-                  </tr>
-                ) : error ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-12 text-center text-red-400"
-                    >
-                      {error}
                     </td>
                   </tr>
                 ) : (

@@ -15,7 +15,7 @@ const FeaturedPizzas = () => {
   }, []);
 
   return (
-    <section id="featured-menu" className="bg-yellow-50 py-20 dark:bg-[#0F0F12]">
+    <section id="featured-menu" className="bg-yellow-50 py-20 dark:bg-[#09090B]">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
 
         {/* Heading */}
@@ -85,12 +85,12 @@ const FeaturedPizzas = () => {
                     <p className="text-lg font-extrabold text-[#D99B00] dark:text-[#FEC447]">
                       ৳{pizza.price}
                     </p>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                       {pizza.vendor}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1 text-xs text-zinc-500">
+                  <div className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
                     <MapPin size={14} />
                     {pizza.location}
                   </div>
