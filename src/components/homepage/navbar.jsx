@@ -126,7 +126,7 @@ const NavbarPage = () => {
 
           {/* Login */}
           <Link
-            href="/login"
+            href="/sign-in"
             className="hidden items-center gap-2 rounded-full bg-[#FEC447] px-5 py-2.5 text-sm font-bold text-black transition hover:bg-[#f5b92e] sm:flex"
           >
             <UserRound size={17} />
