@@ -39,7 +39,6 @@ const SignInPage = () => {
         email,
         password,
         rememberMe,
-        callbackURL: "/",
       });
 
       if (error) {
@@ -47,9 +46,19 @@ const SignInPage = () => {
         return;
       }
 
+      const { data: session } = await authClient.getSession();
+      const role = session?.user?.role;
       toast.success("Welcome back to Pizzora!");
-      router.push("/");
+      if (role === "admin") {
+        router.push("/dashboard/admin");
+      } else if (role === "vendor") {
+        router.push("/dashboard/vendor");
+      } else {
+        router.push("/");
+      }
       router.refresh();
+      
+
     } catch (error) {
       toast.error(error.message || "Something went wrong.");
     } finally {
