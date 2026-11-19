@@ -85,11 +85,7 @@ export default function VendorSidebar() {
                     {menuItems.map((item) => {
                         const Icon = item.icon;
 
-                        const active =
-                            item.href === "/dashboard/vendor"
-                                ? pathname === item.href
-                                : pathname === item.href ||
-                                pathname.startsWith(item.href + "/");
+                        const active = pathname === item.href;
 
                         return (
                             <Link
