@@ -1,24 +1,21 @@
-
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import {
-  Settings,
   User,
   Store,
   Bell,
-  ShoppingBag,
   Save,
 } from "lucide-react";
 
-const SettingsPage = () => {
-  const [notifications, setNotifications] = useState({
-    newOrders: true,
-    pizzaRequests: true,
-    vendorMessages: true,
-    emailAlerts: false,
-  });
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
+const STORAGE_KEY = "pizzora_admin_settings";
+
+const SettingsPage = () => {
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -28,8 +25,50 @@ const SettingsPage = () => {
   const [marketplace, setMarketplace] = useState({
     name: "Pizzora",
     email: "",
-    currency: "USD",
+    currency: "BDT",
+    deliveryFee: 60,
+    acceptingOrders: true,
   });
+
+  const [notifications, setNotifications] = useState({
+    newOrders: true,
+    pizzaRequests: true,
+    vendorMessages: true,
+    emailAlerts: false,
+  });
+
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.profile) setProfile(parsed.profile);
+        if (parsed.marketplace) setMarketplace((prev) => ({ ...prev, ...parsed.marketplace }));
+        if (parsed.notifications) setNotifications(parsed.notifications);
+      } catch {
+        // ignore invalid local data
+      }
+    }
+
+    fetch(`${API_URL}/admin/settings`, {
+      credentials: "include",
+      cache: "no-store",
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return;
+        if (data.profile) setProfile((prev) => ({ ...prev, ...data.profile }));
+        if (data.marketplace) {
+          setMarketplace((prev) => ({ ...prev, ...data.marketplace }));
+        }
+        if (data.notifications) {
+          setNotifications((prev) => ({ ...prev, ...data.notifications }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleToggle = (key) => {
     setNotifications((prev) => ({
@@ -38,9 +77,31 @@ const SettingsPage = () => {
     }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    alert("Settings UI is ready. Backend integration is coming next.");
+    setSaving(true);
+
+    const payload = { profile, marketplace, notifications };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+
+    try {
+      const res = await fetch(`${API_URL}/admin/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        toast.success("Settings saved to database.");
+      } else {
+        toast.success("Settings saved locally.");
+      }
+    } catch {
+      toast.success("Settings saved locally.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const inputClass =
@@ -124,7 +185,7 @@ const SettingsPage = () => {
                 Marketplace Settings
               </h2>
               <p className="text-sm text-zinc-500">
-                General marketplace information.
+                General marketplace information and order defaults.
               </p>
             </div>
           </div>
@@ -167,11 +228,60 @@ const SettingsPage = () => {
                 }
                 className={inputClass}
               >
-                <option value="USD">USD ($)</option>
                 <option value="BDT">BDT (৳)</option>
+                <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
               </select>
             </div>
+
+            <div>
+              <label className="text-sm text-zinc-400">
+                Standard Delivery Fee (৳)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={marketplace.deliveryFee}
+                onChange={(e) =>
+                  setMarketplace({
+                    ...marketplace,
+                    deliveryFee: Number(e.target.value),
+                  })
+                }
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between gap-4 border-t border-zinc-800/80 pt-5">
+            <div>
+              <p className="text-sm font-medium text-white">
+                Accepting New Orders
+              </p>
+              <p className="mt-1 text-xs text-zinc-500">
+                Temporarily pause incoming orders across the store if needed.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                setMarketplace((prev) => ({
+                  ...prev,
+                  acceptingOrders: !prev.acceptingOrders,
+                }))
+              }
+              aria-pressed={marketplace.acceptingOrders}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+                marketplace.acceptingOrders ? "bg-orange-500" : "bg-zinc-700"
+              }`}
+            >
+              <span
+                className={`absolute top-1 h-4 w-4 rounded-full bg-white transition ${
+                  marketplace.acceptingOrders ? "left-6" : "left-1"
+                }`}
+              />
+            </button>
           </div>
         </section>
 
@@ -192,15 +302,36 @@ const SettingsPage = () => {
 
           <div className="space-y-5">
             {[
-              { key: "newOrders", title: "New Orders", description: "When a customer places a new order." },
-              { key: "pizzaRequests", title: "Pizza Requests", description: "When a vendor submits a new pizza." },
-              { key: "vendorMessages", title: "Vendor Messages", description: "When a vendor sends a message." },
-              { key: "emailAlerts", title: "Email Notifications", description: "Receive marketplace alerts through email." },
+              {
+                key: "newOrders",
+                title: "New Orders",
+                description: "When a customer places a new order.",
+              },
+              {
+                key: "pizzaRequests",
+                title: "Pizza Requests",
+                description: "When a vendor submits a new pizza.",
+              },
+              {
+                key: "vendorMessages",
+                title: "Vendor Messages",
+                description: "When a vendor sends a message.",
+              },
+              {
+                key: "emailAlerts",
+                title: "Email Notifications",
+                description: "Receive marketplace alerts through email.",
+              },
             ].map((item) => (
-              <div key={item.key} className="flex items-center justify-between gap-4">
+              <div
+                key={item.key}
+                className="flex items-center justify-between gap-4"
+              >
                 <div>
                   <p className="text-sm font-medium text-white">{item.title}</p>
-                  <p className="mt-1 text-xs text-zinc-500">{item.description}</p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    {item.description}
+                  </p>
                 </div>
 
                 <button
@@ -222,27 +353,14 @@ const SettingsPage = () => {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 md:p-7">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-orange-500/10 p-3">
-              <ShoppingBag size={21} className="text-orange-400" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-white">Order Preferences</h2>
-              <p className="text-sm text-zinc-500">
-                Order processing will be managed through the order management system.
-              </p>
-            </div>
-          </div>
-        </section>
-
         <div className="flex justify-end">
           <button
             type="submit"
-            className="flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
+            disabled={saving}
+            className="flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
           >
             <Save size={18} />
-            Save Settings
+            {saving ? "Saving..." : "Save Settings"}
           </button>
         </div>
       </form>

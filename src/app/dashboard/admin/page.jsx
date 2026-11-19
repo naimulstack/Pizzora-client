@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Users,
   ShoppingBag,
@@ -12,9 +13,12 @@ import {
   CheckCircle2,
   Truck,
   XCircle,
+  Bell,
 } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
 const STATUS_STYLES = {
   Delivered: "bg-green-500/10 text-green-400",
@@ -30,6 +34,7 @@ const AdminDashboard = () => {
     totalUsers: 0,
     totalPizzas: 0,
     totalVendors: 0,
+    unreadNotifications: 0,
     orderSummary: {},
     monthlySales: [],
     recentOrders: [],
@@ -47,6 +52,8 @@ const AdminDashboard = () => {
         setLoading(false);
       });
   }, []);
+
+  const unreadCount = Number(data?.unreadNotifications || 0);
 
   const stats = [
     {
@@ -134,8 +141,23 @@ const AdminDashboard = () => {
             </p>
           </div>
 
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-400">
-            Admin Panel
+          <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/admin/notifications"
+              aria-label="Notifications"
+              className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 transition hover:border-orange-500/50 hover:text-orange-400"
+            >
+              <Bell size={19} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[11px] font-bold text-black shadow">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </Link>
+
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-400">
+              Admin Panel
+            </div>
           </div>
         </div>
 

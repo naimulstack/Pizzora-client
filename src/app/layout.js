@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import NavbarPage from "@/components/homepage/navbar";
 import { Toaster } from "react-hot-toast";
+import { CartProvider } from "@/context/CartContext";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -19,8 +20,10 @@ export default function RootLayout({ children }) {
     <html lang="en" className="h-full antialiased">
       <body className={`${jakarta.className} min-h-full flex flex-col`}>
         <Toaster position="top-center" />
-        <NavbarPage />
-        {children}
+        <CartProvider>
+          <NavbarPage />
+          {children}
+        </CartProvider>
       </body>
     </html>
   );

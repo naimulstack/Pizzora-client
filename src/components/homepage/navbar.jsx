@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Search,
   ShoppingCart,
@@ -12,22 +13,37 @@ import {
   Menu,
   X,
   UserRound,
+  LogOut,
 } from "lucide-react";
 
 import DarkLogo from "../../app/Images/Pizzora Freshly Baked Logo.png";
 import BrightLogo from "../../app/Images/Pizzora_Pizz_Gold_Transparent.png";
+import { useSession, signOut } from "@/lib/auth-client";
+import { useCart } from "@/context/CartContext";
+import { getInitials, getProfileHref } from "@/lib/utils";
 
 const NavbarPage = () => {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const { totalItems } = useCart();
+
+  const user = session?.user;
+
   const [isDark, setIsDark] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const dark = savedTheme !== "light";
+    const applyTheme = async () => {
+      const savedTheme = localStorage.getItem("theme");
+      const dark = savedTheme !== "light";
 
-    setIsDark(dark);
-    document.documentElement.classList.toggle("dark", dark);
+      setIsDark(dark);
+      document.documentElement.classList.toggle("dark", dark);
+    };
+
+    applyTheme();
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -44,6 +60,20 @@ const NavbarPage = () => {
     setIsDark(newTheme);
     document.documentElement.classList.toggle("dark", newTheme);
     localStorage.setItem("theme", newTheme ? "dark" : "light");
+  };
+
+  const handleSignOut = async () => {
+    setLoggingOut(true);
+
+    try {
+      await signOut();
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   const navLinks = [
@@ -110,9 +140,12 @@ const NavbarPage = () => {
             className="relative rounded-full p-2.5 transition hover:bg-[#FEC447]/10 hover:text-[#FEC447]"
           >
             <ShoppingCart size={21} />
-            <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-[#FEC447] text-[10px] font-bold text-black">
-              0
-            </span>
+
+            {totalItems > 0 && (
+              <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FEC447] px-1 text-[10px] font-bold text-black">
+                {totalItems}
+              </span>
+            )}
           </Link>
 
           {/* Theme Toggle */}
@@ -124,14 +157,49 @@ const NavbarPage = () => {
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          {/* Login */}
-          <Link
-            href="/sign-in"
-            className="hidden items-center gap-2 rounded-full bg-[#FEC447] px-5 py-2.5 text-sm font-bold text-black transition hover:bg-[#f5b92e] sm:flex"
-          >
-            <UserRound size={17} />
-            Login
-          </Link>
+          {user ? (
+            <>
+              {/* Profile Circle */}
+              <Link
+                href={getProfileHref(user)}
+                aria-label="My Profile"
+                title={user.name || "My Profile"}
+                className="ml-1 h-10 w-10 overflow-hidden rounded-full ring-2 ring-[#FEC447]/60 transition hover:ring-[#FEC447]"
+              >
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt={user.name || "Profile"}
+                    width={40}
+                    height={40}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center bg-[#FEC447] text-xs font-bold text-black">
+                    {getInitials(user.name)}
+                  </span>
+                )}
+              </Link>
+
+              {/* Logout */}
+              <button
+                onClick={handleSignOut}
+                disabled={loggingOut}
+                className="hidden items-center gap-2 rounded-full border border-zinc-300 px-4 py-2.5 text-sm font-bold transition hover:border-red-400 hover:text-red-500 sm:flex dark:border-white/15 dark:hover:border-red-400 dark:hover:text-red-400"
+              >
+                <LogOut size={16} />
+                {loggingOut ? "Logging out..." : "Logout"}
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="hidden items-center gap-2 rounded-full bg-[#FEC447] px-5 py-2.5 text-sm font-bold text-black transition hover:bg-[#f5b92e] sm:flex"
+            >
+              <UserRound size={17} />
+              Login
+            </Link>
+          )}
 
           {/* Mobile Menu */}
           <button
@@ -166,12 +234,47 @@ const NavbarPage = () => {
             ))}
 
             <Link
-              href="/login"
+              href="/cart"
               onClick={() => setIsOpen(false)}
-              className="rounded-full bg-[#FEC447] px-5 py-3 text-center font-bold text-black"
+              className="flex items-center gap-2 text-sm font-medium transition hover:text-[#FEC447]"
             >
-              Login
+              <ShoppingCart size={17} />
+              Cart
+              {totalItems > 0 && (
+                <span className="rounded-full bg-[#FEC447] px-2 py-0.5 text-xs font-bold text-black">
+                  {totalItems}
+                </span>
+              )}
             </Link>
+
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href={getProfileHref(user)}
+                  onClick={() => setIsOpen(false)}
+                  className="flex flex-1 items-center gap-2 rounded-full bg-[#FEC447]/15 px-5 py-3 font-bold text-[#FEC447]"
+                >
+                  <UserRound size={16} />
+                  {user.name?.split(" ")[0] || "Profile"}
+                </Link>
+
+                <button
+                  onClick={handleSignOut}
+                  disabled={loggingOut}
+                  className="rounded-full border border-zinc-300 px-5 py-3 text-sm font-bold transition hover:border-red-400 hover:text-red-500 dark:border-white/15 dark:hover:text-red-400"
+                >
+                  {loggingOut ? "..." : "Logout"}
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/sign-in"
+                onClick={() => setIsOpen(false)}
+                className="rounded-full bg-[#FEC447] px-5 py-3 text-center font-bold text-black"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       )}
