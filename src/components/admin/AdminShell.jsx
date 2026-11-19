@@ -9,7 +9,7 @@ const AdminShell = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white md:flex">
+    <div className="min-h-screen bg-white text-zinc-900 md:flex dark:bg-[#09090b] dark:text-white">
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}

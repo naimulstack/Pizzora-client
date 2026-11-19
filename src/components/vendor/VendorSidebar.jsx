@@ -59,8 +59,8 @@ export default function VendorSidebar() {
     const pathname = usePathname();
 
     return (
-        <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-zinc-800 bg-[#09090b] text-white">
-            <div className="flex h-20 items-center justify-between border-b border-zinc-800 px-6">
+        <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-zinc-200 bg-white text-zinc-900 dark:border-zinc-800 dark:bg-[#09090b] dark:text-white">
+            <div className="flex h-20 items-center justify-between border-b border-zinc-200 px-6 dark:border-zinc-800">
                 <Link href="/" className="flex items-center">
                     <Image
                         src={BrightLogo}
@@ -93,7 +93,7 @@ export default function VendorSidebar() {
                                 href={item.href}
                                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${active
                                         ? "bg-[#FEC447] text-black"
-                                        : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                                        : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
                                     }`}
                             >
                                 <Icon size={19} />
@@ -104,7 +104,7 @@ export default function VendorSidebar() {
                 </nav>
             </div>
 
-            <div className="mt-auto border-t border-zinc-800 p-5">
+            <div className="mt-auto border-t border-zinc-200 p-5 dark:border-zinc-800">
                 <Link
                     href="/"
                     className="flex items-center gap-3 text-sm text-zinc-400 transition hover:text-[#FEC447]"

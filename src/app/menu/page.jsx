@@ -100,9 +100,9 @@ const MenuPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white">
+    <div className="min-h-screen bg-white text-zinc-900 dark:bg-[#09090b] dark:text-white">
       {/* Top Navbar / Header */}
-      <header className="sticky top-0 z-30 border-b border-zinc-800/80 bg-[#09090b]/85 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/85 backdrop-blur-md dark:border-zinc-800/80 dark:bg-[#09090b]/85">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 text-orange-400 ring-1 ring-orange-500/30">
@@ -122,7 +122,7 @@ const MenuPage = () => {
 
       {/* Hero & Filter Section */}
       <section className="mx-auto max-w-7xl px-4 pt-8 pb-6 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-orange-950/20 p-6 sm:p-8">
+        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-900/5 sm:p-8 dark:border-zinc-800 dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-900/90 dark:to-orange-950/20">
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <div className="max-w-2xl space-y-2">
               <Badge
@@ -132,10 +132,10 @@ const MenuPage = () => {
                 <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                 Handcrafted & Hot Delivered
               </Badge>
-              <h2 className="text-2xl font-bold tracking-tight text-white sm:text-4xl">
+              <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
                 Crafted for True Pizza Lovers
               </h2>
-              <p className="text-sm text-zinc-400 sm:text-base">
+              <p className="text-sm text-zinc-600 sm:text-base dark:text-zinc-400">
                 Explore approved pizzas from trusted local kitchens and add your
                 favorites directly to your cart.
               </p>
@@ -147,7 +147,7 @@ const MenuPage = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search pizza, vendor, area..."
-                className="h-11 rounded-xl border-zinc-800 bg-zinc-950/90 pl-10 text-sm text-white placeholder:text-zinc-500 focus-visible:ring-orange-500"
+                className="h-11 rounded-xl border-zinc-200 bg-zinc-50 pl-10 text-sm text-zinc-900 placeholder:text-zinc-500 focus-visible:ring-orange-500 dark:border-zinc-800 dark:bg-zinc-950/90 dark:text-white dark:placeholder:text-zinc-500"
               />
             </div>
           </div>
@@ -164,7 +164,7 @@ const MenuPage = () => {
                   className={`rounded-xl px-4 py-2 text-xs font-semibold transition sm:text-sm ${
                     active
                       ? "bg-orange-500 text-black shadow-sm shadow-orange-500/20"
-                      : "border border-zinc-800 bg-zinc-950/70 text-zinc-300 hover:border-zinc-700 hover:text-white"
+                      : "border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:text-white"
                   }`}
                 >
                   {cat}
@@ -182,22 +182,22 @@ const MenuPage = () => {
             {[1, 2, 3].map((n) => (
               <Card
                 key={n}
-                className="overflow-hidden rounded-2xl border-zinc-800 bg-zinc-900/50"
+                className="overflow-hidden rounded-2xl border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/50"
               >
-                <div className="h-52 w-full animate-pulse bg-zinc-800" />
+                <div className="h-52 w-full animate-pulse bg-zinc-200 dark:bg-zinc-800" />
                 <CardContent className="space-y-3 p-5">
-                  <div className="h-5 w-2/3 animate-pulse rounded bg-zinc-800" />
-                  <div className="h-4 w-full animate-pulse rounded bg-zinc-800" />
-                  <div className="h-4 w-1/2 animate-pulse rounded bg-zinc-800" />
+                  <div className="h-5 w-2/3 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                  <div className="h-4 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : filteredPizzas.length === 0 ? (
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/40 px-6 py-16 text-center">
-            <Pizza className="mx-auto mb-3 h-10 w-10 text-zinc-600" />
-            <h3 className="text-lg font-semibold text-white">No pizzas found</h3>
-            <p className="mt-1 text-sm text-zinc-400">
+          <div className="rounded-3xl border border-zinc-200 bg-white px-6 py-16 text-center dark:border-zinc-800 dark:bg-zinc-900/40">
+            <Pizza className="mx-auto mb-3 h-10 w-10 text-zinc-400 dark:text-zinc-600" />
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">No pizzas found</h3>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
               Try clearing your search or selecting another category.
             </p>
           </div>
@@ -206,19 +206,19 @@ const MenuPage = () => {
             {filteredPizzas.map((pizza) => (
               <Card
                 key={pizza._id}
-                className="group flex flex-col justify-between overflow-hidden rounded-2xl border-zinc-800/90 bg-zinc-900/60 text-white transition hover:border-orange-500/40 hover:bg-zinc-900"
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border-zinc-200 bg-white text-zinc-900 transition hover:border-orange-500/40 hover:bg-zinc-50 dark:border-zinc-800/90 dark:bg-zinc-900/60 dark:text-white dark:hover:bg-zinc-900"
               >
                 <div>
-                  <div className="relative h-52 w-full overflow-hidden bg-zinc-950">
+                  <div className="relative h-52 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950">
                     <img
                       src={pizza.image}
                       alt={pizza.name}
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent dark:from-zinc-950/80" />
 
                     <div className="absolute top-3 left-3 flex items-center gap-2">
-                      <Badge className="rounded-lg border border-zinc-700/80 bg-zinc-950/85 px-2.5 py-1 text-xs font-medium text-orange-300 backdrop-blur-sm hover:bg-zinc-950/85">
+                      <Badge className="rounded-lg border border-zinc-200 bg-white/90 px-2.5 py-1 text-xs font-medium text-orange-700 backdrop-blur-sm hover:bg-white/90 dark:border-zinc-700/80 dark:bg-zinc-950/85 dark:text-orange-300 dark:hover:bg-zinc-950/85">
                         {pizza.category}
                       </Badge>
                       {pizza.isPopular && (
@@ -228,7 +228,7 @@ const MenuPage = () => {
                       )}
                     </div>
 
-                    <div className="absolute top-3 right-3 flex items-center gap-1 rounded-lg border border-zinc-700/80 bg-zinc-950/85 px-2.5 py-1 text-xs font-semibold text-amber-400 backdrop-blur-sm">
+                    <div className="absolute top-3 right-3 flex items-center gap-1 rounded-lg border border-zinc-200 bg-white/90 px-2.5 py-1 text-xs font-semibold text-amber-600 backdrop-blur-sm dark:border-zinc-700/80 dark:bg-zinc-950/85 dark:text-amber-400">
                       <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                       <span>{Number(pizza.rating ?? 4.5).toFixed(1)}</span>
                     </div>
@@ -236,32 +236,32 @@ const MenuPage = () => {
 
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-3">
-                      <CardTitle className="text-xl font-bold text-white">
+                      <CardTitle className="text-xl font-bold text-zinc-900 dark:text-white">
                         {pizza.name}
                       </CardTitle>
-                      <span className="shrink-0 rounded-xl bg-orange-500/15 px-3 py-1 text-lg font-extrabold text-orange-400">
+                      <span className="shrink-0 rounded-xl bg-orange-500/15 px-3 py-1 text-lg font-extrabold text-orange-600 dark:text-orange-400">
                         ৳{pizza.price}
                       </span>
                     </div>
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                    <p className="line-clamp-2 text-sm leading-relaxed text-zinc-400">
+                    <p className="line-clamp-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                       {pizza.description}
                     </p>
 
-                    <div className="space-y-1.5 border-t border-zinc-800/80 pt-3 text-xs text-zinc-400">
+                    <div className="space-y-1.5 border-t border-zinc-200 pt-3 text-xs text-zinc-600 dark:border-zinc-800/80 dark:text-zinc-400">
                       <div className="flex items-center gap-2">
-                        <Store className="h-3.5 w-3.5 text-orange-400" />
+                        <Store className="h-3.5 w-3.5 text-orange-500 dark:text-orange-400" />
                         <span>
                           Vendor:{" "}
-                          <strong className="font-medium text-zinc-200">
+                          <strong className="font-medium text-zinc-700 dark:text-zinc-200">
                             {pizza.vendor || "Pizzora Kitchen"}
                           </strong>
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <MapPin className="h-3.5 w-3.5 text-orange-400" />
+                        <MapPin className="h-3.5 w-3.5 text-orange-500 dark:text-orange-400" />
                         <span>{pizza.location || "Dhaka"}</span>
                       </div>
                     </div>

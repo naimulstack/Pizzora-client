@@ -82,10 +82,10 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
     return (
         <aside
-            className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-zinc-800 bg-[#09090b] transition-transform duration-300 md:sticky md:top-0 md:h-screen md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
+            className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-zinc-200 bg-white transition-transform duration-300 dark:border-zinc-800 dark:bg-[#09090b] md:sticky md:top-0 md:h-screen md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
                 }`}
         >
-            <div className="flex h-20 items-center justify-center border-b border-zinc-800 px-6">
+            <div className="flex h-20 items-center justify-center border-b border-zinc-200 px-6 dark:border-zinc-800">
                 <Link
                     href="/dashboard/admin"
                     onClick={onClose}
@@ -105,7 +105,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
                 <button
                     onClick={onClose}
-                    className="text-zinc-400 hover:text-white md:hidden"
+                    className="text-zinc-500 hover:text-zinc-900 md:hidden dark:text-zinc-400 dark:hover:text-white"
                 >
                     <X size={22} />
                 </button>
@@ -133,7 +133,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
                                         onClick={onClose}
                                         className={`group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive
                                                 ? "bg-orange-500 text-white shadow-lg shadow-orange-500/10"
-                                                : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                                                : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
                                             }`}
                                     >
                                         <Icon size={19} />
@@ -150,9 +150,9 @@ const AdminSidebar = ({ isOpen, onClose }) => {
                 ))}
             </nav>
 
-            <div className="border-t border-zinc-800 p-5">
-                <div className="rounded-xl bg-zinc-900 p-4">
-                    <p className="text-sm font-semibold text-white">
+            <div className="border-t border-zinc-200 p-5 dark:border-zinc-800">
+                <div className="rounded-xl bg-zinc-100 p-4 dark:bg-zinc-900">
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">
                         Pizzora Admin
                     </p>
                     <p className="mt-1 text-xs text-zinc-500">
