@@ -1,414 +1,242 @@
+
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
-  UserRound,
+  Pencil,
   Store,
   MapPin,
   Phone,
   Mail,
+  UserRound,
   ImagePlus,
-  Globe,
-  Save,
   Share2,
   ExternalLink,
+  Globe,
+  Plus,
+  AlertCircle,
 } from "lucide-react";
+import { useSession } from "@/lib/auth-client";
+import {
+  EMPTY_VENDOR_PROFILE,
+  getVendorProfile,
+} from "@/lib/vendorProfile";
 
 export default function VendorProfilePage() {
-  const [formData, setFormData] = useState({
-    companyName: "",
-    ownerName: "",
-    email: "",
-    phone: "",
-    logo: "",
-    coverImage: "",
-    location: "",
-    address: "",
-    description: "",
-    facebook: "",
-    instagram: "",
-    website: "",
-  });
+  const { data: session } = useSession();
 
-  const [message, setMessage] = useState("");
+  const [profile, setProfile] = useState(EMPTY_VENDOR_PROFILE);
+  const [loading, setLoading] = useState(true);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setMessage("");
+  useEffect(() => {
+    const load = async () => {
+      const saved = getVendorProfile();
+
+      if (saved) {
+        setProfile({ ...EMPTY_VENDOR_PROFILE, ...saved });
+      }
+
+      setLoading(false);
+    };
+
+    load();
+  }, []);
+
+  const user = session?.user;
+
+  const hasProfile = Boolean(
+    profile.companyName || profile.ownerName || profile.email
+  );
+
+  const display = {
+    ...profile,
+    email: profile.email || user?.email || "",
+    ownerName: profile.ownerName || user?.name || "",
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setMessage("Profile form is ready. Database connection is the next step.");
-  };
-
-  const inputClass =
-    "w-full rounded-xl border border-zinc-800 bg-[#18181b] px-4 py-3 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-[#FEC447]";
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-10 w-10 animate-pulse rounded-2xl bg-zinc-800" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 md:p-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Business Profile</h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          Manage your restaurant information and business details.
-        </p>
-      </div>
-
-      {/* Main Grid: Form on Left, Live Preview on Right */}
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* Left Side: Form (7 Columns on Large Screens) */}
-        <form onSubmit={handleSubmit} className="space-y-8 lg:col-span-7">
-          {/* Company Information */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-            <div className="mb-6 flex items-center gap-3">
-              <Store className="text-[#FEC447]" size={23} />
-              <h2 className="text-xl font-bold">Company Information</h2>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">
-                  Company Name *
-                </label>
-                <input
-                  required
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                  placeholder="Your Restaurant Name"
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">
-                  Owner Name *
-                </label>
-                <input
-                  required
-                  name="ownerName"
-                  value={formData.ownerName}
-                  onChange={handleChange}
-                  placeholder="Enter owner name"
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">
-                  Business Email *
-                </label>
-                <input
-                  required
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="restaurant@example.com"
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">
-                  Phone Number *
-                </label>
-                <input
-                  required
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+880 1XXXXXXXXX"
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Business Images */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-            <div className="mb-6 flex items-center gap-3">
-              <ImagePlus className="text-[#FEC447]" size={23} />
-              <h2 className="text-xl font-bold">Business Images</h2>
-            </div>
-
-            <div className="space-y-5">
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">
-                  Company Logo URL
-                </label>
-                <input
-                  name="logo"
-                  value={formData.logo}
-                  onChange={handleChange}
-                  placeholder="Paste your logo image URL"
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">
-                  Cover Image URL
-                </label>
-                <input
-                  name="coverImage"
-                  value={formData.coverImage}
-                  onChange={handleChange}
-                  placeholder="Paste your cover image URL"
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Location */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-            <div className="mb-6 flex items-center gap-3">
-              <MapPin className="text-[#FEC447]" size={23} />
-              <h2 className="text-xl font-bold">Business Location</h2>
-            </div>
-
-            <div className="space-y-5">
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">
-                  City / Area *
-                </label>
-                <input
-                  required
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="e.g. Chattogram"
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">
-                  Full Business Address *
-                </label>
-                <textarea
-                  required
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  rows={3}
-                  placeholder="Enter your complete restaurant address"
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Description */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-            <div className="mb-6 flex items-center gap-3">
-              <UserRound className="text-[#FEC447]" size={23} />
-              <h2 className="text-xl font-bold">About Your Business</h2>
-            </div>
-
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={5}
-              placeholder="Tell customers about your restaurant..."
-              className={inputClass}
-            />
-          </section>
-
-          {/* Social Links */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-            <div className="mb-6 flex items-center gap-3">
-              <Globe className="text-[#FEC447]" size={23} />
-              <h2 className="text-xl font-bold">Social Media & Website</h2>
-            </div>
-
-            <div className="space-y-5">
-              {[
-                ["facebook", "Facebook URL"],
-                ["instagram", "Instagram URL"],
-                ["website", "Website URL"],
-              ].map(([name, label]) => (
-                <div key={name}>
-                  <label className="mb-2 block text-sm text-zinc-300">
-                    {label}
-                  </label>
-                  <input
-                    type="url"
-                    name={name}
-                    value={formData[name]}
-                    onChange={handleChange}
-                    placeholder={`https://${name}.com/...`}
-                    className={inputClass}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Submit */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              {message && <p className="text-sm text-[#FEC447]">{message}</p>}
-            </div>
-
-            <button
-              type="submit"
-              className="flex items-center gap-2 rounded-xl bg-[#FEC447] px-7 py-3 font-bold text-black transition hover:bg-[#eab536]"
-            >
-              <Save size={18} />
-              Save Profile
-            </button>
+      <div className="mx-auto max-w-5xl space-y-6">
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">My Profile</h1>
+            <p className="mt-2 text-sm text-zinc-400">
+              Your business profile as customers see it.
+            </p>
           </div>
-        </form>
 
-        {/* Right Side: Live Preview Card (5 Columns on Large Screens) */}
-        <div className="lg:col-span-5">
-          <div className="sticky top-8">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                Live Profile Preview
-              </span>
-              <span className="rounded-full bg-[#FEC447]/10 px-3 py-1 text-xs font-medium text-[#FEC447]">
-                Customer View
-              </span>
+          <Link
+            href="/dashboard/vendor/profile/edit"
+            className="flex items-center gap-2 rounded-xl bg-[#FEC447] px-5 py-3 text-sm font-bold text-black transition hover:bg-[#eab536]"
+          >
+            <Pencil size={17} />
+            Edit Profile
+          </Link>
+        </div>
+
+        {/* Incomplete notice */}
+        {!hasProfile && (
+          <div className="flex flex-col items-start gap-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-5 sm:flex-row sm:items-center">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-yellow-500/10 text-yellow-400">
+              <AlertCircle size={22} />
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 shadow-xl">
-              {/* Cover Image */}
-              <div className="relative h-44 w-full bg-zinc-800">
-                {formData.coverImage ? (
-                  <img
-                    src={formData.coverImage}
-                    alt="Cover Preview"
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
-                ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900 text-zinc-600">
-                    <ImagePlus size={32} className="mb-2 opacity-50" />
-                    <span className="text-xs">Cover Image Preview</span>
-                  </div>
-                )}
+            <div className="flex-1">
+              <h3 className="font-semibold text-[#FEC447]">
+                Complete your business profile
+              </h3>
+              <p className="mt-1 text-sm text-zinc-400">
+                Add your company details, photos and contact info so customers
+                can find and trust your restaurant.
+              </p>
+            </div>
 
-                {/* Logo Avatar */}
-                <div className="absolute -bottom-10 left-6 h-20 w-20 overflow-hidden rounded-2xl border-4 border-zinc-900 bg-zinc-800 shadow-lg">
-                  {formData.logo ? (
-                    <img
-                      src={formData.logo}
-                      alt="Logo Preview"
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[#FEC447]">
-                      <Store size={30} />
-                    </div>
-                  )}
-                </div>
+            <Link
+              href="/dashboard/vendor/profile/edit"
+              className="flex items-center gap-2 rounded-xl bg-[#FEC447] px-4 py-2.5 text-sm font-bold text-black transition hover:bg-[#eab536]"
+            >
+              <Plus size={16} />
+              Add Details
+            </Link>
+          </div>
+        )}
+
+        {/* Profile Card */}
+        <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 shadow-xl">
+          {/* Cover Image */}
+          <div className="relative h-44 w-full bg-zinc-800">
+            {display.coverImage ? (
+              <img
+                src={display.coverImage}
+                alt="Cover"
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900 text-zinc-600">
+                <ImagePlus size={32} className="mb-2 opacity-50" />
+                <span className="text-xs">No cover image added</span>
               </div>
+            )}
 
-              {/* Card Body */}
-              <div className="px-6 pb-6 pt-14">
-                {/* Title & Owner */}
+            {/* Logo Avatar */}
+            <div className="absolute -bottom-10 left-6 h-20 w-20 overflow-hidden rounded-2xl border-4 border-zinc-900 bg-zinc-800 shadow-lg">
+              {display.logo ? (
+                <img
+                  src={display.logo}
+                  alt="Logo"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-[#FEC447]">
+                  <Store size={30} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card Body */}
+          <div className="px-6 pb-6 pt-14">
+            <h2 className="text-2xl font-bold text-white">
+              {display.companyName || "Your Restaurant Name"}
+            </h2>
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-zinc-400">
+              <UserRound size={14} className="text-[#FEC447]" />
+              Owned by {display.ownerName || "Owner Name"}
+            </p>
+
+            <p className="mt-4 text-sm leading-relaxed text-zinc-300">
+              {display.description ||
+                "Your restaurant description will appear here."}
+            </p>
+
+            {/* Contact & Location Info */}
+            <div className="mt-6 grid gap-4 border-t border-zinc-800 pt-5 sm:grid-cols-2">
+              <div className="flex items-start gap-3 text-sm text-zinc-300">
+                <MapPin size={16} className="mt-0.5 shrink-0 text-[#FEC447]" />
                 <div>
-                  <h3 className="text-xl font-bold text-white">
-                    {formData.companyName || "Your Restaurant Name"}
-                  </h3>
-                  <p className="mt-1 flex items-center gap-1.5 text-xs text-zinc-400">
-                    <UserRound size={14} className="text-[#FEC447]" />
-                    Owned by {formData.ownerName || "Owner Name"}
+                  <p className="font-medium text-white">
+                    {display.location || "City / Area"}
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    {display.address || "Full business address"}
                   </p>
                 </div>
+              </div>
 
-                {/* Description */}
-                <p className="mt-4 text-sm leading-relaxed text-zinc-300">
-                  {formData.description ||
-                    "Your restaurant description will appear here. Tell your customers what makes your food and service special."}
-                </p>
+              <div className="flex items-center gap-3 text-sm text-zinc-300">
+                <Phone size={16} className="shrink-0 text-[#FEC447]" />
+                <span>{display.phone || "+880 1XXXXXXXXX"}</span>
+              </div>
 
-                {/* Contact & Location Info */}
-                <div className="mt-6 space-y-3 border-t border-zinc-800 pt-5 text-sm">
-                  <div className="flex items-start gap-3 text-zinc-300">
-                    <MapPin
-                      size={16}
-                      className="mt-0.5 shrink-0 text-[#FEC447]"
-                    />
-                    <div>
-                      <p className="font-medium text-white">
-                        {formData.location || "City / Area"}
-                      </p>
-                      <p className="text-xs text-zinc-400">
-                        {formData.address ||
-                          "Full business address will show here"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-zinc-300">
-                    <Phone size={16} className="shrink-0 text-[#FEC447]" />
-                    <span>{formData.phone || "+880 1XXXXXXXXX"}</span>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-zinc-300">
-                    <Mail size={16} className="shrink-0 text-[#FEC447]" />
-                    <span className="truncate">
-                      {formData.email || "restaurant@example.com"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Social Links */}
-                {(formData.facebook ||
-                  formData.instagram ||
-                  formData.website) && (
-                  <div className="mt-6 flex flex-wrap gap-2.5 border-t border-zinc-800 pt-5">
-                    {formData.facebook && (
-                      <a
-                        href={formData.facebook}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#FEC447] hover:text-[#FEC447]"
-                      >
-                        <Share2 size={14} />
-                        Facebook
-                      </a>
-                    )}
-                    {formData.instagram && (
-                      <a
-                        href={formData.instagram}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#FEC447] hover:text-[#FEC447]"
-                      >
-                        <Share2 size={14} />
-                        Instagram
-                      </a>
-                    )}
-                    {formData.website && (
-                      <a
-                        href={formData.website}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#FEC447] hover:text-[#FEC447]"
-                      >
-                        <ExternalLink size={14} />
-                        Website
-                      </a>
-                    )}
-                  </div>
-                )}
+              <div className="flex items-center gap-3 text-sm text-zinc-300 sm:col-span-2">
+                <Mail size={16} className="shrink-0 text-[#FEC447]" />
+                <span className="truncate">
+                  {display.email || "restaurant@example.com"}
+                </span>
               </div>
             </div>
+
+            {/* Social Links */}
+            {(display.facebook || display.instagram || display.website) && (
+              <div className="mt-6 flex flex-wrap gap-2.5 border-t border-zinc-800 pt-5">
+                {display.facebook && (
+                  <a
+                    href={display.facebook}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#FEC447] hover:text-[#FEC447]"
+                  >
+                    <Share2 size={14} />
+                    Facebook
+                  </a>
+                )}
+                {display.instagram && (
+                  <a
+                    href={display.instagram}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#FEC447] hover:text-[#FEC447]"
+                  >
+                    <Share2 size={14} />
+                    Instagram
+                  </a>
+                )}
+                {display.website && (
+                  <a
+                    href={display.website}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-1.5 text-xs text-zinc-200 transition hover:border-[#FEC447] hover:text-[#FEC447]"
+                  >
+                    <ExternalLink size={14} />
+                    Website
+                  </a>
+                )}
+              </div>
+            )}
+
+            {!(display.facebook || display.instagram || display.website) && (
+              <div className="mt-6 flex items-center gap-2 border-t border-zinc-800 pt-5 text-xs text-zinc-500">
+                <Globe size={14} className="text-[#FEC447]" />
+                No social links added yet.
+              </div>
+            )}
           </div>
         </div>
       </div>

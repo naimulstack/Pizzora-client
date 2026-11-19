@@ -33,6 +33,13 @@ const statusIcon = {
   rejected: XCircle,
 };
 
+const extractPizzas = (raw) => {
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.pizzas)) return raw.pizzas;
+  if (Array.isArray(raw?.data)) return raw.data;
+  return [];
+};
+
 export default function MyPizzasPage() {
   const [pizzas, setPizzas] = useState([]);
   const [search, setSearch] = useState("");
@@ -69,13 +76,26 @@ export default function MyPizzasPage() {
         headers,
       }).catch(() => null);
 
+      let list = [];
       if (res?.ok) {
-        const data = await res.json();
-        setPizzas(Array.isArray(data) ? data : []);
-      } else {
-        setPizzas([]);
+        const raw = await res.json().catch(() => []);
+        list = extractPizzas(raw);
       }
 
+      if (list.length === 0 && query) {
+        const fallbackRes = await fetch(`${API_URL}/vendor/pizzas`, {
+          cache: "no-store",
+          credentials: "include",
+          headers,
+        }).catch(() => null);
+
+        if (fallbackRes?.ok) {
+          const fallbackRaw = await fallbackRes.json().catch(() => []);
+          list = extractPizzas(fallbackRaw);
+        }
+      }
+
+      setPizzas(list);
       setLoading(false);
     };
 
@@ -145,7 +165,7 @@ export default function MyPizzasPage() {
   ];
 
   return (
-    <div className="min-h-screen p-6 md:p-10">
+    <div className="min-h-screen bg-[#09090b] p-6 text-white md:p-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">My Pizzas</h1>
