@@ -117,19 +117,6 @@ const MenuPage = () => {
               </h1>
             </div>
           </div>
-
-          <Button
-            onClick={() => router.push("/cart")}
-            className="relative gap-2 rounded-xl bg-orange-500 px-4 py-2.5 font-semibold text-black hover:bg-orange-400"
-          >
-            <ShoppingCart className="h-4 w-4" />
-            <span>Cart</span>
-            {totalItems > 0 && (
-              <Badge className="ml-1 rounded-full bg-black/85 px-2 py-0.5 text-xs font-bold text-orange-400 hover:bg-black/85">
-                {totalItems}
-              </Badge>
-            )}
-          </Button>
         </div>
       </header>
 
