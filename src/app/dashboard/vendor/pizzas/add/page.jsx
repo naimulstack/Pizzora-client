@@ -1,440 +1,589 @@
-
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
 import {
-    Pizza,
-    ArrowLeft,
-    ImagePlus,
-    Upload,
-    X,
-    Plus,
-    Clock,
-    Tag,
-    Utensils,
+  Pizza,
+  ArrowLeft,
+  ImagePlus,
+  Upload,
+  X,
+  Clock,
+  Tag,
+  Utensils,
+  MapPin,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
-const categories = [
-    "Classic Pizza",
-    "Chicken Pizza",
-    "Beef Pizza",
-    "Seafood Pizza",
-    "Vegetarian Pizza",
-    "Special Pizza",
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
+
+const CATEGORIES = [
+  "Classic Pizza",
+  "Chicken Pizza",
+  "Beef Pizza",
+  "Seafood Pizza",
+  "Vegetarian Pizzas",
+  "Special Pizza",
 ];
 
+const SIZES = ["Regular", "Medium", "Large", "Extra Large"];
+
+const INPUT_CLASS =
+  "w-full rounded-xl border border-zinc-800 bg-[#18181b] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-[#FEC447]";
+
 export default function AddPizzaPage() {
-    const router = useRouter();
+  const router = useRouter();
 
-    const [formData, setFormData] = useState({
-        name: "",
-        category: "",
-        price: "",
-        discountPrice: "",
-        image: "",
-        description: "",
-        ingredients: "",
-        sizes: ["Regular"],
-        preparationTime: "",
-        location: "",
-        isAvailable: true,
-    });
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    price: "",
+    discountPrice: "",
+    image: "",
+    description: "",
+    ingredients: "",
+    sizes: ["Regular"],
+    preparationTime: "",
+    location: "",
+    isAvailable: true,
+  });
 
-    const [imagePreview, setImagePreview] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    const inputClass =
-        "w-full rounded-xl border border-zinc-800 bg-[#18181b] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-[#FEC447]";
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
+  const handleSizeChange = (size) => {
+    setFormData((prev) => ({
+      ...prev,
+      sizes: prev.sizes.includes(size)
+        ? prev.sizes.filter((item) => item !== size)
+        : [...prev.sizes, size],
+    }));
+  };
 
-        setFormData((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value,
-        }));
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const handleImageChange = (e) => {
-        const value = e.target.value;
+    if (formData.sizes.length === 0) {
+      toast.error("Please select at least one pizza size.");
+      return;
+    }
 
-        setFormData((prev) => ({
-            ...prev,
-            image: value,
-        }));
+    if (
+      formData.discountPrice &&
+      Number(formData.discountPrice) >= Number(formData.price)
+    ) {
+      toast.error("Discount price must be lower than regular price.");
+      return;
+    }
 
-        setImagePreview(value);
-    };
+    setLoading(true);
 
-    const handleSizeChange = (size) => {
-        setFormData((prev) => ({
-            ...prev,
-            sizes: prev.sizes.includes(size)
-                ? prev.sizes.filter((item) => item !== size)
-                : [...prev.sizes, size],
-        }));
-    };
+    try {
+      const [sessionData, tokenData] = await Promise.all([
+        authClient.getSession?.().catch(() => null),
+        authClient.token?.().catch(() => null),
+      ]);
 
+      const user = sessionData?.data?.user || sessionData?.user || {};
+      const token = tokenData?.data?.token || tokenData?.token;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
 
-        if (formData.sizes.length === 0) {
-            toast.error("Please select at least one pizza size.");
-            return;
-        }
+      const payload = {
+        ...formData,
+        price: Number(formData.price),
+        discountPrice: formData.discountPrice
+          ? Number(formData.discountPrice)
+          : null,
+        preparationTime: Number(formData.preparationTime),
+        vendorId: user.id || "",
+        vendorEmail: user.email || "",
+        vendorName: user.name || "",
+        vendor: user.companyName || user.name || "Pizzora Vendor",
+        status: "pending",
+        isActive: true,
+      };
 
-        if (
-            formData.discountPrice &&
-            Number(formData.discountPrice) >= Number(formData.price)
-        ) {
-            toast.error("Discount price must be lower than regular price.");
-            return;
-        }
+      const res = await fetch(`${API_URL}/vendor/pizzas`, {
+        method: "POST",
+        headers,
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
 
-        setLoading(true);
+      const data = await res.json().catch(() => ({}));
 
-        try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/vendor/pizzas`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        ...formData,
-                        vendorId: "",
-                        vendorEmail: "",
-                        vendorName: "",
-                        companyName: "",
-                    }),
-                }
-            );
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || "Pizza submission failed");
+      }
 
-            const data = await response.json();
+      toast.success("Pizza submitted! Status: Pending");
+      router.push("/dashboard/vendor/pizzas");
+      router.refresh();
+    } catch (error) {
+      toast.error(error.message || "Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            if (!response.ok || !data.success) {
-                throw new Error(data.message || "Pizza submission failed");
-            }
+  const ingredientList = formData.ingredients
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 
-            toast.success("Pizza submitted for admin approval!");
+  return (
+    <div className="min-h-screen p-6 md:p-10">
+      <div className="mb-8">
+        <Link
+          href="/dashboard/vendor/pizzas"
+          className="mb-5 inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FEC447]"
+        >
+          <ArrowLeft size={17} />
+          Back to My Pizzas
+        </Link>
 
-            router.push("/dashboard/vendor/pizzas");
-            router.refresh();
-        } catch (error) {
-            toast.error(error.message || "Something went wrong!");
-        } finally {
-            setLoading(false);
-        }
-    };
+        <h1 className="text-3xl font-bold">Add New Pizza</h1>
+        <p className="mt-2 text-sm text-zinc-400">
+          Add your pizza and submit it for admin approval.
+        </p>
+      </div>
 
-
-    return (
-        <div className="min-h-screen p-6 md:p-10">
-            <div className="mb-8">
-                <Link
-                    href="/dashboard/vendor/pizzas"
-                    className="mb-5 inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FEC447]"
-                >
-                    <ArrowLeft size={17} />
-                    Back to My Pizzas
-                </Link>
-
-                <h1 className="text-3xl font-bold">Add New Pizza</h1>
-                <p className="mt-2 text-sm text-zinc-400">
-                    Add your delicious pizza and submit it for admin approval.
-                </p>
+      {/* Main Split Layout: Form on Left, Live Preview on Right */}
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* Left Side: Form */}
+        <form onSubmit={handleSubmit} className="space-y-7 lg:col-span-7">
+          {/* Basic Information */}
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <Pizza className="text-[#FEC447]" size={23} />
+              <h2 className="text-xl font-bold">Basic Information</h2>
             </div>
 
-            <form onSubmit={handleSubmit} className="max-w-5xl space-y-7">
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className="mb-2 block text-sm text-zinc-300">
+                  Pizza Name *
+                </label>
+                <input
+                  required
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="e.g. Special Chicken Pizza"
+                  className={INPUT_CLASS}
+                />
+              </div>
 
-                {/* Basic Information */}
-                <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-                    <div className="mb-6 flex items-center gap-3">
-                        <Pizza className="text-[#FEC447]" size={23} />
-                        <h2 className="text-xl font-bold">Basic Information</h2>
-                    </div>
+              <div>
+                <label className="mb-2 block text-sm text-zinc-300">
+                  Category *
+                </label>
+                <select
+                  required
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className={INPUT_CLASS}
+                >
+                  <option value="">Select Category</option>
+                  {CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-                    <div className="grid gap-5 md:grid-cols-2">
-                        <div className="md:col-span-2">
-                            <label className="mb-2 block text-sm text-zinc-300">
-                                Pizza Name *
-                            </label>
-                            <input
-                                required
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                placeholder="e.g. Special Chicken Pizza"
-                                className={inputClass}
-                            />
-                        </div>
+              <div>
+                <label className="mb-2 block text-sm text-zinc-300">
+                  Preparation Time (mins) *
+                </label>
+                <div className="relative">
+                  <Clock
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+                  />
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    name="preparationTime"
+                    value={formData.preparationTime}
+                    onChange={handleChange}
+                    placeholder="25"
+                    className={`${INPUT_CLASS} pl-11`}
+                  />
+                </div>
+              </div>
+            </div>
 
-                        <div>
-                            <label className="mb-2 block text-sm text-zinc-300">
-                                Category *
-                            </label>
-                            <select
-                                required
-                                name="category"
-                                value={formData.category}
-                                onChange={handleChange}
-                                className={inputClass}
-                            >
-                                <option value="">Select Category</option>
-                                {categories.map((category) => (
-                                    <option key={category} value={category}>
-                                        {category}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+            <div className="mt-5">
+              <label className="mb-2 block text-sm text-zinc-300">
+                Pizza Description *
+              </label>
+              <textarea
+                required
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={4}
+                placeholder="Describe your pizza..."
+                className={INPUT_CLASS}
+              />
+            </div>
+          </section>
 
-                        <div>
-                            <label className="mb-2 block text-sm text-zinc-300">
-                                Preparation Time *
-                            </label>
-                            <div className="relative">
-                                <Clock
-                                    size={18}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
-                                />
-                                <input
-                                    required
-                                    type="number"
-                                    min="1"
-                                    name="preparationTime"
-                                    value={formData.preparationTime}
-                                    onChange={handleChange}
-                                    placeholder="e.g. 25 minutes"
-                                    className={`${inputClass} pl-11`}
-                                />
-                            </div>
-                        </div>
-                    </div>
+          {/* Pricing */}
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <Tag className="text-[#FEC447]" size={23} />
+              <h2 className="text-xl font-bold">Pricing Information</h2>
+            </div>
 
-                    <div className="mt-5">
-                        <label className="mb-2 block text-sm text-zinc-300">
-                            Pizza Description *
-                        </label>
-                        <textarea
-                            required
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            rows={4}
-                            placeholder="Describe your delicious pizza..."
-                            className={inputClass}
-                        />
-                    </div>
-                </section>
+            <div className="grid gap-5 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm text-zinc-300">
+                  Regular Price (৳) *
+                </label>
+                <input
+                  required
+                  type="number"
+                  min="1"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  placeholder="450"
+                  className={INPUT_CLASS}
+                />
+              </div>
 
-                {/* Pricing */}
-                <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-                    <div className="mb-6 flex items-center gap-3">
-                        <Tag className="text-[#FEC447]" size={23} />
-                        <h2 className="text-xl font-bold">Pricing Information</h2>
-                    </div>
+              <div>
+                <label className="mb-2 block text-sm text-zinc-300">
+                  Discount Price (৳)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  name="discountPrice"
+                  value={formData.discountPrice}
+                  onChange={handleChange}
+                  placeholder="Optional"
+                  className={INPUT_CLASS}
+                />
+              </div>
+            </div>
+          </section>
 
-                    <div className="grid gap-5 md:grid-cols-2">
-                        <div>
-                            <label className="mb-2 block text-sm text-zinc-300">
-                                Regular Price (৳) *
-                            </label>
-                            <input
-                                required
-                                type="number"
-                                min="1"
-                                name="price"
-                                value={formData.price}
-                                onChange={handleChange}
-                                placeholder="450"
-                                className={inputClass}
-                            />
-                        </div>
+          {/* Pizza Image */}
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <ImagePlus className="text-[#FEC447]" size={23} />
+              <h2 className="text-xl font-bold">Pizza Image</h2>
+            </div>
 
-                        <div>
-                            <label className="mb-2 block text-sm text-zinc-300">
-                                Discount Price (৳)
-                            </label>
-                            <input
-                                type="number"
-                                min="1"
-                                name="discountPrice"
-                                value={formData.discountPrice}
-                                onChange={handleChange}
-                                placeholder="Optional"
-                                className={inputClass}
-                            />
-                        </div>
-                    </div>
-                </section>
+            <label className="mb-2 block text-sm text-zinc-300">
+              Image URL *
+            </label>
+            <input
+              required
+              type="url"
+              name="image"
+              value={formData.image}
+              onChange={handleChange}
+              placeholder="https://example.com/pizza.jpg"
+              className={INPUT_CLASS}
+            />
 
-                {/* Pizza Image */}
-                <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-                    <div className="mb-6 flex items-center gap-3">
-                        <ImagePlus className="text-[#FEC447]" size={23} />
-                        <h2 className="text-xl font-bold">Pizza Image</h2>
-                    </div>
+            {formData.image && (
+              <div className="relative mt-5 w-fit">
+                <img
+                  src={formData.image}
+                  alt="Pizza preview"
+                  className="h-48 w-64 rounded-xl border border-zinc-700 object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, image: "" }))
+                  }
+                  className="absolute -right-3 -top-3 rounded-full bg-red-500 p-2 text-white"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            )}
+          </section>
 
-                    <label className="mb-2 block text-sm text-zinc-300">
-                        Image URL *
-                    </label>
+          {/* Ingredients and Sizes */}
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <Utensils className="text-[#FEC447]" size={23} />
+              <h2 className="text-xl font-bold">Ingredients &amp; Sizes</h2>
+            </div>
 
-                    <input
-                        required
-                        type="url"
-                        name="image"
-                        value={formData.image}
-                        onChange={handleImageChange}
-                        placeholder="Paste your uploaded image URL"
-                        className={inputClass}
-                    />
+            <div>
+              <label className="mb-2 block text-sm text-zinc-300">
+                Ingredients *
+              </label>
+              <textarea
+                required
+                name="ingredients"
+                value={formData.ingredients}
+                onChange={handleChange}
+                rows={3}
+                placeholder="Mozzarella, Chicken, Tomato, Onion..."
+                className={INPUT_CLASS}
+              />
+            </div>
 
-                    <p className="mt-2 text-xs text-zinc-500">
-                        Use a direct image URL. We will add ImgBB upload functionality later.
-                    </p>
+            <div className="mt-6">
+              <label className="mb-3 block text-sm text-zinc-300">
+                Available Sizes *
+              </label>
+              <div className="flex flex-wrap gap-3">
+                {SIZES.map((size) => (
+                  <button
+                    type="button"
+                    key={size}
+                    onClick={() => handleSizeChange(size)}
+                    className={`rounded-xl border px-5 py-3 text-sm font-medium transition ${
+                      formData.sizes.includes(size)
+                        ? "border-[#FEC447] bg-[#FEC447]/10 text-[#FEC447]"
+                        : "border-zinc-700 text-zinc-400 hover:border-zinc-500"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
 
-                    {imagePreview && (
-                        <div className="relative mt-5 w-fit">
-                            <img
-                                src={imagePreview}
-                                alt="Pizza preview"
-                                className="h-48 w-64 rounded-xl border border-zinc-700 object-cover"
-                                onError={() => setImagePreview("")}
-                            />
+          {/* Availability and Location */}
+          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+            <h2 className="mb-6 text-xl font-bold">
+              Availability &amp; Location
+            </h2>
 
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setImagePreview("");
-                                    setFormData((prev) => ({ ...prev, image: "" }));
-                                }}
-                                className="absolute -right-3 -top-3 rounded-full bg-red-500 p-2 text-white"
-                            >
-                                <X size={15} />
-                            </button>
-                        </div>
-                    )}
-                </section>
+            <div>
+              <label className="mb-2 block text-sm text-zinc-300">
+                Pizza Location *
+              </label>
+              <input
+                required
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="e.g. Agrabad, Chattogram"
+                className={INPUT_CLASS}
+              />
+            </div>
 
-                {/* Ingredients and Sizes */}
-                <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-                    <div className="mb-6 flex items-center gap-3">
-                        <Utensils className="text-[#FEC447]" size={23} />
-                        <h2 className="text-xl font-bold">Ingredients & Sizes</h2>
-                    </div>
+            <label className="mt-6 flex cursor-pointer items-center gap-3">
+              <input
+                type="checkbox"
+                name="isAvailable"
+                checked={formData.isAvailable}
+                onChange={handleChange}
+                className="h-4 w-4 accent-[#FEC447]"
+              />
+              <span className="text-sm text-zinc-300">
+                This pizza is currently available for orders.
+              </span>
+            </label>
+          </section>
 
-                    <div>
-                        <label className="mb-2 block text-sm text-zinc-300">
-                            Ingredients *
-                        </label>
-                        <textarea
-                            required
-                            name="ingredients"
-                            value={formData.ingredients}
-                            onChange={handleChange}
-                            rows={3}
-                            placeholder="Mozzarella, Chicken, Tomato, Onion, Cheese..."
-                            className={inputClass}
-                        />
-                    </div>
+          {/* Submit */}
+          <div className="flex flex-wrap justify-end gap-3">
+            <Link
+              href="/dashboard/vendor/pizzas"
+              className="rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-300 hover:bg-zinc-800"
+            >
+              Cancel
+            </Link>
 
-                    <div className="mt-6">
-                        <label className="mb-3 block text-sm text-zinc-300">
-                            Available Sizes *
-                        </label>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center gap-2 rounded-xl bg-[#FEC447] px-7 py-3 font-bold text-black transition hover:bg-[#eab536] disabled:opacity-50"
+            >
+              <Upload size={18} />
+              {loading ? "Submitting..." : "Submit for Approval"}
+            </button>
+          </div>
+        </form>
 
-                        <div className="flex flex-wrap gap-3">
-                            {["Regular", "Medium", "Large", "Extra Large"].map((size) => (
-                                <button
-                                    type="button"
-                                    key={size}
-                                    onClick={() => handleSizeChange(size)}
-                                    className={`rounded-xl border px-5 py-3 text-sm font-medium transition ${formData.sizes.includes(size)
-                                            ? "border-[#FEC447] bg-[#FEC447]/10 text-[#FEC447]"
-                                            : "border-zinc-700 text-zinc-400 hover:border-zinc-500"
-                                        }`}
-                                >
-                                    {size}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </section>
+        {/* Right Side: Live Pizza Preview Card */}
+        <div className="lg:col-span-5">
+          <div className="sticky top-8">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                Live Pizza Preview
+              </span>
+              <span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-[#FEC447]">
+                Pending Approval
+              </span>
+            </div>
 
-                {/* Availability and Location */}
-                <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
-                    <h2 className="mb-6 text-xl font-bold">Availability & Location</h2>
+            <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 shadow-xl">
+              {/* Image Section */}
+              <div className="relative h-56 w-full bg-zinc-800">
+                {formData.image ? (
+                  <img
+                    src={formData.image}
+                    alt={formData.name || "Pizza Preview"}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900 text-zinc-600">
+                    <Pizza size={38} className="mb-2 opacity-50" />
+                    <span className="text-xs">Pizza Image Preview</span>
+                  </div>
+                )}
 
-                    <div>
-                        <label className="mb-2 block text-sm text-zinc-300">
-                            Pizza Location *
-                        </label>
-                        <input
-                            required
-                            name="location"
-                            value={formData.location}
-                            onChange={handleChange}
-                            placeholder="e.g. Agrabad, Chattogram"
-                            className={inputClass}
-                        />
-                    </div>
+                {/* Availability Badge */}
+                <div className="absolute left-4 top-4">
+                  {formData.isAvailable ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                      <CheckCircle2 size={13} />
+                      Available
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                      <XCircle size={13} />
+                      Unavailable
+                    </span>
+                  )}
+                </div>
 
-                    <label className="mt-6 flex cursor-pointer items-center gap-3">
-                        <input
-                            type="checkbox"
-                            name="isAvailable"
-                            checked={formData.isAvailable}
-                            onChange={handleChange}
-                            className="h-4 w-4 accent-[#FEC447]"
-                        />
-                        <span className="text-sm text-zinc-300">
-                            This pizza is currently available for orders.
+                {/* Category Pill */}
+                <div className="absolute bottom-4 left-4">
+                  <span className="rounded-lg bg-zinc-950/85 px-3 py-1 text-xs font-medium text-[#FEC447] backdrop-blur-sm">
+                    {formData.category || "Category"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-6">
+                {/* Title & Prep Time */}
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-xl font-bold text-white">
+                    {formData.name || "Your Pizza Name"}
+                  </h3>
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-950/60 px-2.5 py-1 text-xs text-zinc-300">
+                    <Clock size={13} className="text-[#FEC447]" />
+                    {formData.preparationTime
+                      ? `${formData.preparationTime} min`
+                      : "25 min"}
+                  </span>
+                </div>
+
+                {/* Price */}
+                <div className="mt-3 flex items-baseline gap-2.5">
+                  {formData.discountPrice ? (
+                    <>
+                      <span className="text-2xl font-extrabold text-[#FEC447]">
+                        ৳{formData.discountPrice}
+                      </span>
+                      <span className="text-sm text-zinc-500 line-through">
+                        ৳{formData.price || "0"}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-2xl font-extrabold text-[#FEC447]">
+                      ৳{formData.price || "0"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Description */}
+                <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                  {formData.description ||
+                    "Your pizza description will appear here. Highlight the crust, sauce, and toppings."}
+                </p>
+
+                {/* Sizes */}
+                <div className="mt-5 border-t border-zinc-800 pt-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                    Available Sizes
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.sizes.length > 0 ? (
+                      formData.sizes.map((size) => (
+                        <span
+                          key={size}
+                          className="rounded-lg border border-zinc-700 bg-zinc-800/70 px-2.5 py-1 text-xs text-zinc-200"
+                        >
+                          {size}
                         </span>
-                    </label>
-                </section>
+                      ))
+                    ) : (
+                      <span className="text-xs text-zinc-500">
+                        No size selected
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-                {/* Approval Notice */}
-                <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-5">
-                    <div className="flex items-start gap-3">
-                        <Clock className="mt-1 shrink-0 text-[#FEC447]" size={20} />
-                        <div>
-                            <h3 className="font-semibold text-[#FEC447]">
-                                Admin Approval Required
-                            </h3>
-                            <p className="mt-2 text-sm leading-6 text-zinc-400">
-                                Your pizza will remain Pending until an admin reviews and
-                                approves it. Once approved, it will become visible on the
-                                Pizzora website.
-                            </p>
-                        </div>
+                {/* Ingredients */}
+                <div className="mt-5 border-t border-zinc-800 pt-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                    Ingredients
+                  </p>
+                  {ingredientList.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {ingredientList.map((item, idx) => (
+                        <span
+                          key={`${item}-${idx}`}
+                          className="rounded-md bg-zinc-800 px-2.5 py-1 text-xs text-zinc-300"
+                        >
+                          {item}
+                        </span>
+                      ))}
                     </div>
+                  ) : (
+                    <p className="text-xs text-zinc-500">
+                      Mozzarella, Chicken, Tomato, Onion...
+                    </p>
+                  )}
                 </div>
 
-                {/* Buttons */}
-                <div className="flex flex-wrap justify-end gap-3">
-                    <Link
-                        href="/dashboard/vendor/pizzas"
-                        className="rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-300 hover:bg-zinc-800"
-                    >
-                        Cancel
-                    </Link>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="flex items-center gap-2 rounded-xl bg-[#FEC447] px-7 py-3 font-bold text-black transition hover:bg-[#eab536] disabled:opacity-50"
-                    >
-                        <Upload size={18} />
-                        {loading ? "Submitting..." : "Submit for Approval"}
-                    </button>
+                {/* Location */}
+                <div className="mt-5 flex items-center gap-2 border-t border-zinc-800 pt-4 text-xs text-zinc-400">
+                  <MapPin size={14} className="shrink-0 text-[#FEC447]" />
+                  <span>{formData.location || "Pizza Location"}</span>
                 </div>
-            </form>
+              </div>
+            </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

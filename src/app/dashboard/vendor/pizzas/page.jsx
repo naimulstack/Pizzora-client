@@ -1,8 +1,8 @@
-
 "use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import {
   Plus,
@@ -14,7 +14,12 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  X,
 } from "lucide-react";
+
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
 const statusStyle = {
   approved: "bg-green-500/10 text-green-400 border-green-500/20",
@@ -33,46 +38,78 @@ export default function MyPizzasPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState("");
+  const [selectedPizza, setSelectedPizza] = useState(null);
 
   useEffect(() => {
     const fetchMyPizzas = async () => {
-      try {
-        setLoading(true);
-        setError("");
+      setLoading(true);
 
-        const { token } = await authClient.token();
+      const [sessionData, tokenData] = await Promise.all([
+        authClient.getSession?.().catch(() => null),
+        authClient.token?.().catch(() => null),
+      ]);
 
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/vendor/pizzas`,
-          {
-            cache: "no-store",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+      const user = sessionData?.data?.user || sessionData?.user;
+      const token = tokenData?.data?.token || tokenData?.token;
 
-        if (!res.ok) {
-          throw new Error("Failed to load your pizzas");
-        }
+      const params = new URLSearchParams();
+      if (user?.email) params.set("email", user.email);
+      if (user?.name) params.set("vendor", user.name);
+      const query = params.toString() ? `?${params.toString()}` : "";
 
-        const data = await res.json();
-        setPizzas(data);
-      } catch (error) {
-        console.error("Pizza Fetch Error:", error);
-        setError(error.message || "Something went wrong");
-      } finally {
-        setLoading(false);
+      const headers = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
       }
+
+      const res = await fetch(`${API_URL}/vendor/pizzas${query}`, {
+        cache: "no-store",
+        credentials: "include",
+        headers,
+      }).catch(() => null);
+
+      if (res?.ok) {
+        const data = await res.json();
+        setPizzas(Array.isArray(data) ? data : []);
+      } else {
+        setPizzas([]);
+      }
+
+      setLoading(false);
     };
 
     fetchMyPizzas();
   }, []);
 
-  const getStatus = (status) => {
-    return status?.toLowerCase() || "pending";
+  const handleDelete = async (id) => {
+    setDeletingId(id);
+
+    const tokenData = await authClient.token?.().catch(() => null);
+    const token = tokenData?.data?.token || tokenData?.token;
+
+    const headers = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_URL}/vendor/pizzas/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers,
+    }).catch(() => null);
+
+    if (res?.ok) {
+      setPizzas((prev) => prev.filter((item) => item._id !== id));
+      toast.success("Pizza deleted successfully");
+    } else {
+      toast.error("Failed to delete pizza");
+    }
+
+    setDeletingId("");
   };
+
+  const getStatus = (status) => status?.toLowerCase() || "pending";
 
   const filteredPizzas = pizzas.filter((pizza) => {
     const matchesSearch = pizza.name
@@ -86,18 +123,24 @@ export default function MyPizzasPage() {
   });
 
   const statistics = [
-    { label: "Total Pizzas", value: pizzas.length },
+    { label: "Total Pizzas", value: loading ? "..." : pizzas.length },
     {
       label: "Approved",
-      value: pizzas.filter((p) => getStatus(p.status) === "approved").length,
+      value: loading
+        ? "..."
+        : pizzas.filter((p) => getStatus(p.status) === "approved").length,
     },
     {
       label: "Pending",
-      value: pizzas.filter((p) => getStatus(p.status) === "pending").length,
+      value: loading
+        ? "..."
+        : pizzas.filter((p) => getStatus(p.status) === "pending").length,
     },
     {
       label: "Rejected",
-      value: pizzas.filter((p) => getStatus(p.status) === "rejected").length,
+      value: loading
+        ? "..."
+        : pizzas.filter((p) => getStatus(p.status) === "rejected").length,
     },
   ];
 
@@ -170,10 +213,6 @@ export default function MyPizzasPage() {
           <div className="p-12 text-center text-zinc-400">
             Loading your pizzas...
           </div>
-        ) : error ? (
-          <div className="p-12 text-center text-red-400">
-            {error}
-          </div>
         ) : filteredPizzas.length === 0 ? (
           <div className="p-12 text-center">
             <Pizza className="mx-auto text-zinc-600" size={40} />
@@ -221,24 +260,27 @@ export default function MyPizzasPage() {
 
                     <button
                       type="button"
+                      onClick={() => setSelectedPizza(pizza)}
                       title="View Pizza"
                       className="rounded-lg border border-zinc-700 p-2 text-zinc-400 hover:border-[#FEC447] hover:text-[#FEC447]"
                     >
                       <Eye size={17} />
                     </button>
 
-                    <button
-                      type="button"
+                    <Link
+                      href={`/dashboard/vendor/pizzas/edit/${pizza._id}`}
                       title="Edit Pizza"
                       className="rounded-lg border border-zinc-700 p-2 text-zinc-400 hover:border-[#FEC447] hover:text-[#FEC447]"
                     >
                       <Pencil size={17} />
-                    </button>
+                    </Link>
 
                     <button
                       type="button"
+                      disabled={deletingId === pizza._id}
+                      onClick={() => handleDelete(pizza._id)}
                       title="Delete Pizza"
-                      className="rounded-lg border border-zinc-700 p-2 text-zinc-400 hover:border-red-500 hover:text-red-400"
+                      className="rounded-lg border border-zinc-700 p-2 text-zinc-400 hover:border-red-500 hover:text-red-400 disabled:opacity-50"
                     >
                       <Trash2 size={17} />
                     </button>
@@ -249,6 +291,55 @@ export default function MyPizzasPage() {
           </div>
         )}
       </div>
+
+      {/* View Pizza Modal */}
+      {selectedPizza && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 text-white shadow-xl">
+            <div className="relative h-52 w-full bg-zinc-950">
+              <img
+                src={selectedPizza.image}
+                alt={selectedPizza.name}
+                className="h-full w-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setSelectedPizza(null)}
+                className="absolute top-3 right-3 rounded-lg bg-black/70 p-2 text-zinc-300 hover:text-white"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3 p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-medium text-[#FEC447]">
+                    {selectedPizza.category}
+                  </p>
+                  <h3 className="mt-1 text-xl font-bold">
+                    {selectedPizza.name}
+                  </h3>
+                </div>
+                <span className="rounded-xl bg-[#FEC447]/15 px-3 py-1 text-base font-bold text-[#FEC447]">
+                  ৳{selectedPizza.price}
+                </span>
+              </div>
+
+              <p className="text-sm leading-relaxed text-zinc-400">
+                {selectedPizza.description || "No description provided."}
+              </p>
+
+              <div className="flex items-center justify-between border-t border-zinc-800 pt-3 text-xs text-zinc-400">
+                <span>Location: {selectedPizza.location || "Dhaka"}</span>
+                <span className="capitalize">
+                  Status: {getStatus(selectedPizza.status)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
