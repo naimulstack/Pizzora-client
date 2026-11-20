@@ -45,10 +45,13 @@ export default function MyPizzasPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [deletingId, setDeletingId] = useState("");
   const [selectedPizza, setSelectedPizza] = useState(null);
 
   useEffect(() => {
+    let active = true;
+
     const fetchMyPizzas = async () => {
       setLoading(true);
 
@@ -57,18 +60,20 @@ export default function MyPizzasPage() {
         authClient.token?.().catch(() => null),
       ]);
 
-      const user = sessionData?.data?.user || sessionData?.user;
-      const token = tokenData?.data?.token || tokenData?.token;
-
-      const params = new URLSearchParams();
-      if (user?.email) params.set("email", user.email);
-      if (user?.name) params.set("vendor", user.name);
-      const query = params.toString() ? `?${params.toString()}` : "";
+      const user = sessionData?.data?.user || sessionData?.user || null;
+      const token = tokenData?.data?.token || tokenData?.token || "";
 
       const headers = {};
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
+
+      const params = new URLSearchParams();
+      if (user?.email) params.set("email", user.email.trim().toLowerCase());
+      if (user?.name) params.set("vendor", user.name.trim());
+      const query = params.toString() ? `?${params.toString()}` : "";
+
+      let list = [];
 
       const res = await fetch(`${API_URL}/vendor/pizzas${query}`, {
         cache: "no-store",
@@ -76,30 +81,94 @@ export default function MyPizzasPage() {
         headers,
       }).catch(() => null);
 
-      let list = [];
       if (res?.ok) {
         const raw = await res.json().catch(() => []);
         list = extractPizzas(raw);
       }
 
-      if (list.length === 0 && query) {
-        const fallbackRes = await fetch(`${API_URL}/vendor/pizzas`, {
+      if (list.length === 0) {
+        const allVendorRes = await fetch(`${API_URL}/vendor/pizzas`, {
           cache: "no-store",
           credentials: "include",
           headers,
         }).catch(() => null);
 
-        if (fallbackRes?.ok) {
-          const fallbackRaw = await fallbackRes.json().catch(() => []);
-          list = extractPizzas(fallbackRaw);
+        if (allVendorRes?.ok) {
+          const allVendorRaw = await allVendorRes.json().catch(() => []);
+          const allVendorList = extractPizzas(allVendorRaw);
+
+          if (user?.email) {
+            const emailLower = user.email.trim().toLowerCase();
+            const matchedByEmail = allVendorList.filter((item) => {
+              const itemEmail = String(
+                item?.vendorEmail ||
+                  item?.email ||
+                  item?.createdBy ||
+                  item?.ownerEmail ||
+                  ""
+              )
+                .trim()
+                .toLowerCase();
+              return itemEmail === emailLower;
+            });
+            list = matchedByEmail.length > 0 ? matchedByEmail : allVendorList;
+          } else {
+            list = allVendorList;
+          }
         }
       }
 
-      setPizzas(list);
-      setLoading(false);
+      const allFailed =
+        !res?.ok && !list.length;
+
+      if (allFailed) {
+        setLoadError(
+          "Could not load your pizzas. The vendor pizzas endpoint is unavailable."
+        );
+      } else {
+        setLoadError("");
+      }
+
+      if (list.length === 0) {
+        const publicRes = await fetch(`${API_URL}/pizzas`, {
+          cache: "no-store",
+          credentials: "include",
+          headers,
+        }).catch(() => null);
+
+        if (publicRes?.ok) {
+          const publicRaw = await publicRes.json().catch(() => []);
+          const publicList = extractPizzas(publicRaw);
+          if (user?.email) {
+            const emailLower = user.email.trim().toLowerCase();
+            list = publicList.filter((item) => {
+              const itemEmail = String(
+                item?.vendorEmail ||
+                  item?.email ||
+                  item?.createdBy ||
+                  item?.ownerEmail ||
+                  ""
+              )
+                .trim()
+                .toLowerCase();
+              return itemEmail === emailLower;
+            });
+          } else {
+            list = publicList;
+          }
+        }
+      }
+
+      if (active) {
+        setPizzas(list);
+        setLoading(false);
+      }
     };
 
     fetchMyPizzas();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleDelete = async (id) => {
@@ -236,7 +305,9 @@ export default function MyPizzasPage() {
         ) : filteredPizzas.length === 0 ? (
           <div className="p-12 text-center">
             <Pizza className="mx-auto text-muted-content" size={40} />
-            <p className="mt-4 text-muted-content">No pizzas found.</p>
+            <p className="mt-4 text-muted-content">
+              {loadError || "No pizzas found."}
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-surface">
