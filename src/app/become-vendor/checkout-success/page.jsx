@@ -1,275 +1,298 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { authClient } from "@/lib/auth-client";
 import {
   CheckCircle2,
   Copy,
   Check,
-  ShoppingBag,
-  UtensilsCrossed,
-  Clock,
+  Store,
+  ShieldCheck,
   MapPin,
-  CreditCard,
   ArrowRight,
+  Clock,
 } from "lucide-react";
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 ).replace(/\/$/, "");
 
-function CheckoutSuccessContent() {
+const VENDOR_FEE = 3000;
+const PREVIEW_STORAGE_KEY = "pizzora_vendor_application_preview";
+const SUBMITTED_REQ_STORAGE_KEY = "pizzora_vendor_submitted_request";
+
+function VendorCheckoutSuccessContent() {
   const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session_id") || "";
+  const queryStatus = searchParams.get("status") || "";
 
-  const queryOrderId =
-    searchParams.get("orderId") || searchParams.get("id") || "";
-  const queryAmount = searchParams.get("amount") || "";
-  const queryMethod = searchParams.get("method") || "Cash on Delivery";
-
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(Boolean(queryOrderId));
+  const [requestDoc, setRequestDoc] = useState(null);
+  const [status, setStatus] = useState(queryStatus || "pending");
+  const [submittingRequest, setSubmittingRequest] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (!queryOrderId) {
-      setLoading(false);
-      return;
-    }
+  const hasSubmittedRef = useRef(false);
 
+  useEffect(() => {
     let active = true;
 
-    const loadOrderDetails = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(
-          `${API_URL}/orders/${encodeURIComponent(queryOrderId)}`,
+    let savedApp = null;
+    try {
+      const rawSubmitted = sessionStorage.getItem(SUBMITTED_REQ_STORAGE_KEY);
+      if (rawSubmitted) {
+        const parsedSubmitted = JSON.parse(rawSubmitted);
+        setRequestDoc(parsedSubmitted);
+        if (parsedSubmitted?.status) {
+          setStatus(parsedSubmitted.status);
+        }
+      }
+
+      const rawPreview = sessionStorage.getItem(PREVIEW_STORAGE_KEY);
+      if (rawPreview) {
+        savedApp = JSON.parse(rawPreview);
+        setRequestDoc((prev) => prev || savedApp);
+      }
+    } catch {
+      savedApp = null;
+    }
+
+    const syncRequestWithBackend = async () => {
+      // ১. নতুন Stripe পেমেন্ট থেকে এলে একবার POST /vendor-requests করবে
+      if (sessionId && !hasSubmittedRef.current) {
+        hasSubmittedRef.current = true;
+        setSubmittingRequest(true);
+
+        try {
+          const res = await fetch(`${API_URL}/vendor-requests`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              ...(savedApp || {}),
+              userId: savedApp?.userId || "",
+              userEmail: savedApp?.userEmail || savedApp?.email || "",
+              userName: savedApp?.userName || savedApp?.ownerName || "Vendor",
+              shopName: savedApp?.shopName || "New Partner Kitchen",
+              vendorFee: VENDOR_FEE,
+              paymentStatus: "paid",
+              paymentMethod: "Stripe",
+              stripeSessionId: sessionId,
+              transactionId: sessionId,
+              status: "pending",
+            }),
+          });
+
+          const data = await res.json().catch(() => ({}));
+          const created = data?.request || data?.data || data;
+
+          if (res.ok && active) {
+            const nextStatus = created?.status || "pending";
+            setStatus(nextStatus);
+            const mergedDoc = {
+              ...(savedApp || {}),
+              ...(typeof created === "object" ? created : {}),
+              status: nextStatus,
+            };
+            setRequestDoc(mergedDoc);
+            try {
+              sessionStorage.setItem(
+                SUBMITTED_REQ_STORAGE_KEY,
+                JSON.stringify(mergedDoc)
+              );
+              sessionStorage.removeItem(PREVIEW_STORAGE_KEY);
+            } catch {
+              // ignore storage error
+            }
+            toast.success("Vendor application submitted! Status: Pending.");
+          }
+        } finally {
+          if (active) setSubmittingRequest(false);
+        }
+        return;
+      }
+
+      // ২. ইউজার সরাসরি /become-vendor থেকে রিডাইরেক্ট হয়ে এলে লেটেস্ট স্ট্যাটাস আনবে
+      const sessionRes = await authClient.getSession?.().catch(() => null);
+      const currentUser = sessionRes?.data?.user || sessionRes?.user || null;
+      const email = currentUser?.email || savedApp?.email || savedApp?.userEmail;
+
+      if (email && active) {
+        const reqRes = await fetch(
+          `${API_URL}/vendor-requests?email=${encodeURIComponent(email)}`,
           {
             credentials: "include",
             cache: "no-store",
           }
-        );
+        ).catch(() => null);
 
-        if (res.ok && active) {
-          const data = await res.json().catch(() => null);
-          const doc = data?.order || data?.data || data;
-          if (doc && typeof doc === "object") {
-            setOrder(doc);
+        if (reqRes?.ok && active) {
+          const list = await reqRes.json().catch(() => []);
+          if (Array.isArray(list) && list.length > 0) {
+            const latest = list[0];
+            setRequestDoc(latest);
+            setStatus(latest.status || "pending");
           }
         }
-      } catch {
-        // Query params fallback will still render smoothly
-      } finally {
-        if (active) setLoading(false);
       }
     };
 
-    loadOrderDetails();
+    syncRequestWithBackend();
     return () => {
       active = false;
     };
-  }, [queryOrderId]);
+  }, [sessionId]);
 
-  const displayOrderId =
-    order?.orderId ||
-    queryOrderId ||
-    `PZ-${Math.floor(100000 + Math.random() * 900000)}`;
+  const referenceId =
+    sessionId || requestDoc?.stripeSessionId || requestDoc?._id || "";
 
-  const totalAmount = Number(
-    order?.totalPrice ?? order?.amount ?? queryAmount ?? 0
-  );
-
-  const paymentMethod =
-    order?.paymentMethod || order?.payment?.method || queryMethod;
-
-  const deliveryAddress =
-    order?.address ||
-    order?.deliveryAddress ||
-    order?.shippingAddress ||
-    "Chattogram, Bangladesh";
-
-  const statusText = order?.status || "Confirmed";
-
-  const itemsList = Array.isArray(order?.items)
-    ? order.items
-    : order?.pizzaName || order?.pizza
-    ? [
-        {
-          name: order.pizzaName || order.pizza,
-          quantity: order.quantity || 1,
-          price: totalAmount,
-        },
-      ]
-    : [];
-
-  const handleCopyId = async () => {
+  const handleCopyRef = async () => {
+    if (!referenceId) return;
     try {
-      await navigator.clipboard.writeText(displayOrderId);
+      await navigator.clipboard.writeText(String(referenceId));
       setCopied(true);
-      toast.success("Order ID copied!");
+      toast.success("Reference ID copied!");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Could not copy Order ID");
+      toast.error("Could not copy ID");
     }
   };
+
+  const isApproved = status === "approved";
 
   return (
     <main className="min-h-screen bg-[#09090b] px-4 py-12 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl space-y-6">
-        {/* Main Success Card */}
         <section className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-6 text-center shadow-2xl sm:p-10">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
-            <CheckCircle2 size={36} />
+          <div
+            className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border ${
+              isApproved
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                : "border-yellow-500/30 bg-yellow-500/10 text-yellow-400"
+            }`}
+          >
+            {isApproved ? <CheckCircle2 size={36} /> : <Clock size={36} />}
           </div>
 
-          <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-[#FEC447]">
-            Pizzora Order Confirmed
+          <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-orange-400">
+            Pizzora / Partner Application Status
           </p>
 
           <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            Thank You for Your Order!
+            {isApproved
+              ? "Vendor Request Approved!"
+              : "Vendor Request Pending"}
           </h1>
 
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-zinc-400">
-            Your pizza order has been received and is being prepared fresh. You
-            can track your delivery progress anytime.
+            {isApproved
+              ? "Congratulations! Your kitchen is verified and approved as a Pizzora vendor."
+              : "You have already submitted a vendor application. It is currently pending admin review—you do not need to apply again."}
           </p>
 
-          {/* Order ID Box */}
-          <div className="mt-7 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-[#121215] px-5 py-3.5 text-left">
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-zinc-500">
-                Order Reference
-              </p>
-              <p className="mt-0.5 font-mono text-sm font-bold text-[#FEC447] sm:text-base">
-                {displayOrderId}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleCopyId}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs font-semibold text-zinc-300 transition hover:border-[#FEC447] hover:text-[#FEC447]"
+          {/* Status Pill */}
+          <div className="mt-5 flex justify-center">
+            <span
+              className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${
+                isApproved
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                  : "border-yellow-500/30 bg-yellow-500/10 text-yellow-400"
+              }`}
             >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-              {copied ? "Copied" : "Copy ID"}
-            </button>
+              <Clock size={14} />
+              Status: {submittingRequest ? "Submitting..." : status}
+            </span>
           </div>
 
-          {/* Summary Meta */}
-          <div className="mt-6 grid gap-3 text-left sm:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/60 p-4">
-              <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <Clock size={14} className="text-[#FEC447]" />
-                <span>Est. Delivery</span>
+          {/* Reference Box */}
+          {referenceId && (
+            <div className="mt-7 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-[#121215] px-5 py-3.5 text-left">
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] uppercase tracking-wider text-zinc-500">
+                  Application / Session Reference
+                </p>
+                <p className="mt-0.5 truncate font-mono text-xs font-bold text-orange-400 sm:text-sm">
+                  {referenceId}
+                </p>
               </div>
-              <p className="mt-1.5 text-sm font-bold text-white">30–40 mins</p>
+
+              <button
+                type="button"
+                onClick={handleCopyRef}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3.5 py-2 text-xs font-semibold text-zinc-300 transition hover:border-orange-500 hover:text-orange-400"
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? "Copied" : "Copy"}
+              </button>
             </div>
-
-            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/60 p-4">
-              <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <CreditCard size={14} className="text-[#FEC447]" />
-                <span>Payment</span>
-              </div>
-              <p className="mt-1.5 truncate text-sm font-bold text-white">
-                {paymentMethod}
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/60 p-4">
-              <div className="flex items-center gap-2 text-xs text-zinc-400">
-                <ShoppingBag size={14} className="text-[#FEC447]" />
-                <span>Status</span>
-              </div>
-              <p className="mt-1.5 text-sm font-bold capitalize text-emerald-400">
-                {statusText}
-              </p>
-            </div>
-          </div>
-
-          {/* Order Items & Address (when available) */}
-          {loading ? (
-            <div className="mt-6 rounded-2xl border border-zinc-800 bg-zinc-950/40 p-5 text-xs text-zinc-400">
-              Loading order summary...
-            </div>
-          ) : (
-            (itemsList.length > 0 || totalAmount > 0 || order) && (
-              <div className="mt-6 space-y-4 rounded-2xl border border-zinc-800 bg-[#121215] p-5 text-left">
-                {itemsList.length > 0 && (
-                  <div className="space-y-2.5 border-b border-zinc-800 pb-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                      Items Ordered
-                    </p>
-                    {itemsList.map((item, idx) => (
-                      <div
-                        key={item._id || item.id || idx}
-                        className="flex items-center justify-between text-sm"
-                      >
-                        <span className="text-zinc-200">
-                          {item.name || "Pizza"}{" "}
-                          <span className="text-zinc-500">
-                            × {item.quantity || 1}
-                          </span>
-                        </span>
-                        {item.price !== undefined && (
-                          <span className="font-medium text-zinc-300">
-                            ৳
-                            {(
-                              Number(item.price) * Number(item.quantity || 1)
-                            ).toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex items-start gap-2.5 text-xs text-zinc-400">
-                  <MapPin
-                    size={15}
-                    className="mt-0.5 shrink-0 text-[#FEC447]"
-                  />
-                  <span>
-                    Delivering to:{" "}
-                    <strong className="font-semibold text-zinc-200">
-                      {deliveryAddress}
-                    </strong>
-                  </span>
-                </div>
-
-                {totalAmount > 0 && (
-                  <div className="flex items-center justify-between border-t border-zinc-800 pt-3">
-                    <span className="text-sm font-semibold text-zinc-300">
-                      Total Paid / Payable
-                    </span>
-                    <span className="text-xl font-bold text-[#FEC447]">
-                      ৳{totalAmount.toLocaleString()}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )
           )}
 
-          {/* Action Buttons */}
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Link
-              href="/dashboard/orders"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FEC447] px-6 py-3.5 text-sm font-bold text-black transition hover:bg-[#eab536]"
-            >
-              <ShoppingBag size={17} />
-              View My Orders
-              <ArrowRight size={16} />
-            </Link>
+          {/* Application Details */}
+          {requestDoc && (
+            <div className="mt-6 space-y-3 rounded-2xl border border-zinc-800 bg-[#121215] p-5 text-left text-sm">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                <Store size={14} className="text-orange-400" />
+                <span>Submitted Application Summary</span>
+              </div>
 
-            <Link
-              href="/menu"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-6 py-3.5 text-sm font-semibold text-zinc-200 transition hover:border-[#FEC447] hover:text-[#FEC447]"
-            >
-              <UtensilsCrossed size={17} />
-              Order More Pizzas
-            </Link>
+              <div className="grid gap-3 pt-1 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs text-zinc-500">Kitchen / Shop</p>
+                  <p className="font-semibold text-white">
+                    {requestDoc.shopName || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500">Owner</p>
+                  <p className="font-medium text-zinc-200">
+                    {requestDoc.ownerName || requestDoc.userName || "N/A"}
+                  </p>
+                </div>
+                <div className="flex items-start gap-1.5 sm:col-span-2">
+                  <MapPin
+                    size={14}
+                    className="mt-0.5 shrink-0 text-orange-400"
+                  />
+                  <span className="text-xs text-zinc-300">
+                    {requestDoc.cityArea || requestDoc.location || ""}
+                    {requestDoc.fullAddress
+                      ? ` — ${requestDoc.fullAddress}`
+                      : ""}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 border-t border-zinc-800 pt-3 text-xs text-emerald-400">
+                <ShieldCheck size={15} />
+                <span>
+                  Onboarding Fee: ৳
+                  {Number(requestDoc.vendorFee || VENDOR_FEE).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            {isApproved ? (
+              <Link
+                href="/dashboard/vendor"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3.5 text-sm font-bold text-black transition hover:bg-emerald-400"
+              >
+                Open Vendor Dashboard
+                <ArrowRight size={16} />
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-bold text-black transition hover:bg-orange-400"
+              >
+                Go to Dashboard
+                <ArrowRight size={16} />
+              </Link>
+            )}
           </div>
         </section>
       </div>
@@ -277,16 +300,16 @@ function CheckoutSuccessContent() {
   );
 }
 
-export default function CheckoutSuccessPage() {
+export default function VendorCheckoutSuccessPage() {
   return (
     <Suspense
       fallback={
         <main className="flex min-h-screen items-center justify-center bg-[#09090b] text-sm text-zinc-400">
-          Confirming your order...
+          Checking vendor application status...
         </main>
       }
     >
-      <CheckoutSuccessContent />
+      <VendorCheckoutSuccessContent />
     </Suspense>
   );
 }
