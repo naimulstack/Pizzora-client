@@ -25,6 +25,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
+import { useSession } from "@/lib/auth-client";
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
@@ -50,6 +51,9 @@ const FALLBACK_PIZZAS = [
 const MenuPage = () => {
   const router = useRouter();
   const { addToCart, totalItems } = useCart();
+  const { data: session } = useSession();
+
+  const cartHref = session?.user ? "/cart" : "/sign-in";
 
   const [pizzas, setPizzas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -112,10 +116,21 @@ const MenuPage = () => {
               <p className="text-xs font-medium tracking-wide text-orange-400 uppercase">
                 Pizzora Menu
               </p>
-              <h1 className="text-lg font-bold tracking-tight text-white sm:text-xl">
+              <h1 className="text-lg font-bold tracking-tight text-zinc-900 sm:text-xl dark:text-white">
                 Fresh Oven Pizzas
               </h1>
             </div>
+
+            <Button
+              onClick={() => router.push(cartHref)}
+              className="relative flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 font-semibold text-black transition hover:bg-orange-400"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              <span className="hidden sm:inline">Cart</span>
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-black/85 px-1.5 text-xs font-bold text-orange-400">
+                {totalItems}
+              </span>
+            </Button>
           </div>
         </div>
       </header>

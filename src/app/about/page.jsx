@@ -12,10 +12,10 @@ import {
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-[#09090b] px-4 py-10 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-10">
+    <main className="min-h-screen bg-surface px-4 py-10 text-content sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-10">
         {/* Hero Section */}
-        <section className="rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-orange-950/20 p-6 sm:p-10">
+        <section className="rounded-3xl border border-surface bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-orange-950/20 p-6 sm:p-10">
           <Badge
             variant="outline"
             className="mb-4 inline-flex items-center gap-1.5 border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-semibold text-orange-400"
@@ -24,11 +24,11 @@ export default function AboutPage() {
             About Pizzora
           </Badge>
 
-          <h1 className="max-w-3xl text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="max-w-3xl text-3xl font-bold tracking-tight text-content sm:text-4xl">
             Freshly Baked Pizzas from Trusted Local Kitchens
           </h1>
 
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400 sm:text-base">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-content sm:text-base">
             Pizzora connects pizza lovers with local kitchens and partner
             vendors so you can discover hot, freshly made pizzas in one place.
           </p>
@@ -44,7 +44,7 @@ export default function AboutPage() {
             <Button
               variant="outline"
               asChild
-              className="h-11 rounded-xl border-zinc-700 bg-zinc-950/70 px-5 font-semibold text-zinc-200 hover:border-orange-500/50 hover:bg-zinc-900 hover:text-orange-400"
+              className="h-11 rounded-xl border-surface bg-surface-deep/70 px-5 font-semibold text-content hover:border-orange-500/50 hover:bg-card-surface hover:text-orange-400"
             >
               <Link href="/contact">Contact Us</Link>
             </Button>
@@ -53,7 +53,7 @@ export default function AboutPage() {
 
         {/* Highlights Grid */}
         <section className="grid gap-5 sm:grid-cols-3">
-          <Card className="rounded-2xl border-zinc-800 bg-zinc-900/50 text-white transition hover:border-zinc-700">
+          <Card className="rounded-2xl border-surface bg-card-surface/50 text-content transition hover:border-surface">
             <CardHeader className="space-y-3 pb-2">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
                 <ShieldCheck className="h-5 w-5" />
@@ -62,19 +62,19 @@ export default function AboutPage() {
                 <CardTitle className="text-2xl font-bold text-orange-400">
                   100%
                 </CardTitle>
-                <CardDescription className="text-zinc-300">
+                <CardDescription className="text-content">
                   Admin-Reviewed Menu
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted-content">
                 Every pizza listing is checked before going live on the menu.
               </p>
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border-zinc-800 bg-zinc-900/50 text-white transition hover:border-zinc-700">
+          <Card className="rounded-2xl border-surface bg-card-surface/50 text-content transition hover:border-surface">
             <CardHeader className="space-y-3 pb-2">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
                 <Flame className="h-5 w-5" />
@@ -83,19 +83,19 @@ export default function AboutPage() {
                 <CardTitle className="text-2xl font-bold text-orange-400">
                   Made Fresh
                 </CardTitle>
-                <CardDescription className="text-zinc-300">
+                <CardDescription className="text-content">
                   Fresh Oven Craft
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted-content">
                 Prepared to order by local vendors using quality ingredients.
               </p>
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border-zinc-800 bg-zinc-900/50 text-white transition hover:border-zinc-700">
+          <Card className="rounded-2xl border-surface bg-card-surface/50 text-content transition hover:border-surface">
             <CardHeader className="space-y-3 pb-2">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
                 <Clock className="h-5 w-5" />
@@ -104,13 +104,13 @@ export default function AboutPage() {
                 <CardTitle className="text-2xl font-bold text-orange-400">
                   Fast
                 </CardTitle>
-                <CardDescription className="text-zinc-300">
+                <CardDescription className="text-content">
                   Smooth Ordering
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm text-muted-content">
                 Quick browsing, easy cart management, and clear order updates.
               </p>
             </CardContent>
@@ -119,17 +119,17 @@ export default function AboutPage() {
 
         {/* Story & Focus Section */}
         <section className="grid gap-6 md:grid-cols-2">
-          <Card className="rounded-2xl border-zinc-800 bg-zinc-900/50 text-white">
+          <Card className="rounded-2xl border-surface bg-card-surface/50 text-content">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">
+              <CardTitle className="text-xl font-bold text-content">
                 Our Story
               </CardTitle>
-              <CardDescription className="text-zinc-400">
+              <CardDescription className="text-muted-content">
                 Built for pizza lovers and local vendors
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed text-zinc-400">
+              <p className="text-sm leading-relaxed text-muted-content">
                 Great pizza starts with honest ingredients, care in the kitchen,
                 and a simple ordering flow. Pizzora brings local pizza makers
                 and customers together on one clean, reliable platform.
@@ -137,17 +137,17 @@ export default function AboutPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border-zinc-800 bg-zinc-900/50 text-white">
+          <Card className="rounded-2xl border-surface bg-card-surface/50 text-content">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">
+              <CardTitle className="text-xl font-bold text-content">
                 What We Focus On
               </CardTitle>
-              <CardDescription className="text-zinc-400">
+              <CardDescription className="text-muted-content">
                 Quality, clarity, and reliability
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2.5 text-sm text-zinc-300">
+              <ul className="space-y-2.5 text-sm text-content">
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" />
                   <span>

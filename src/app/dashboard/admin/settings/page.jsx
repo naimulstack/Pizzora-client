@@ -105,7 +105,7 @@ const SettingsPage = () => {
   };
 
   const inputClass =
-    "mt-2 w-full rounded-xl border border-zinc-800 bg-[#09090b] px-4 py-3 text-sm text-white outline-none transition focus:border-orange-500";
+    "mt-2 w-full rounded-xl border border-surface bg-surface px-4 py-3 text-sm text-content outline-none transition focus:border-orange-500";
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -113,23 +113,23 @@ const SettingsPage = () => {
         <p className="text-sm font-medium text-orange-400">
           Pizzora / Configuration
         </p>
-        <h1 className="mt-2 text-3xl font-bold text-white">
+        <h1 className="mt-2 text-3xl font-bold text-content">
           Settings
         </h1>
-        <p className="mt-2 text-sm text-zinc-400">
+        <p className="mt-2 text-sm text-muted-content">
           Manage your administrator profile and marketplace preferences.
         </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 md:p-7">
+        <section className="rounded-2xl border border-surface bg-card-surface/50 p-5 md:p-7">
           <div className="mb-6 flex items-center gap-3">
             <div className="rounded-xl bg-orange-500/10 p-3">
               <User size={21} className="text-orange-400" />
             </div>
             <div>
-              <h2 className="font-semibold text-white">Admin Profile</h2>
-              <p className="text-sm text-zinc-500">
+              <h2 className="font-semibold text-content">Admin Profile</h2>
+              <p className="text-sm text-muted-content">
                 Your administrator information.
               </p>
             </div>
@@ -137,7 +137,7 @@ const SettingsPage = () => {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="text-sm text-zinc-400">Full Name</label>
+              <label className="text-sm text-muted-content">Full Name</label>
               <input
                 value={profile.name}
                 onChange={(e) =>
@@ -149,7 +149,7 @@ const SettingsPage = () => {
             </div>
 
             <div>
-              <label className="text-sm text-zinc-400">Email Address</label>
+              <label className="text-sm text-muted-content">Email Address</label>
               <input
                 type="email"
                 value={profile.email}
@@ -162,7 +162,7 @@ const SettingsPage = () => {
             </div>
 
             <div>
-              <label className="text-sm text-zinc-400">Phone Number</label>
+              <label className="text-sm text-muted-content">Phone Number</label>
               <input
                 value={profile.phone}
                 onChange={(e) =>
@@ -175,16 +175,16 @@ const SettingsPage = () => {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 md:p-7">
+        <section className="rounded-2xl border border-surface bg-card-surface/50 p-5 md:p-7">
           <div className="mb-6 flex items-center gap-3">
             <div className="rounded-xl bg-orange-500/10 p-3">
               <Store size={21} className="text-orange-400" />
             </div>
             <div>
-              <h2 className="font-semibold text-white">
+              <h2 className="font-semibold text-content">
                 Marketplace Settings
               </h2>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-content">
                 General marketplace information and order defaults.
               </p>
             </div>
@@ -192,7 +192,7 @@ const SettingsPage = () => {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="text-sm text-zinc-400">
+              <label className="text-sm text-muted-content">
                 Marketplace Name
               </label>
               <input
@@ -205,7 +205,7 @@ const SettingsPage = () => {
             </div>
 
             <div>
-              <label className="text-sm text-zinc-400">
+              <label className="text-sm text-muted-content">
                 Support Email
               </label>
               <input
@@ -220,7 +220,7 @@ const SettingsPage = () => {
             </div>
 
             <div>
-              <label className="text-sm text-zinc-400">Currency</label>
+              <label className="text-sm text-muted-content">Currency</label>
               <select
                 value={marketplace.currency}
                 onChange={(e) =>
@@ -235,7 +235,7 @@ const SettingsPage = () => {
             </div>
 
             <div>
-              <label className="text-sm text-zinc-400">
+              <label className="text-sm text-muted-content">
                 Standard Delivery Fee (৳)
               </label>
               <input
@@ -253,12 +253,12 @@ const SettingsPage = () => {
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-between gap-4 border-t border-zinc-800/80 pt-5">
+          <div className="mt-6 flex items-center justify-between gap-4 border-t border-surface/80 pt-5">
             <div>
-              <p className="text-sm font-medium text-white">
+              <p className="text-sm font-medium text-content">
                 Accepting New Orders
               </p>
-              <p className="mt-1 text-xs text-zinc-500">
+              <p className="mt-1 text-xs text-muted-content">
                 Temporarily pause incoming orders across the store if needed.
               </p>
             </div>
@@ -285,16 +285,16 @@ const SettingsPage = () => {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 md:p-7">
+        <section className="rounded-2xl border border-surface bg-card-surface/50 p-5 md:p-7">
           <div className="mb-6 flex items-center gap-3">
             <div className="rounded-xl bg-orange-500/10 p-3">
               <Bell size={21} className="text-orange-400" />
             </div>
             <div>
-              <h2 className="font-semibold text-white">
+              <h2 className="font-semibold text-content">
                 Notification Preferences
               </h2>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-content">
                 Choose which notifications you want to receive.
               </p>
             </div>
@@ -328,8 +328,8 @@ const SettingsPage = () => {
                 className="flex items-center justify-between gap-4"
               >
                 <div>
-                  <p className="text-sm font-medium text-white">{item.title}</p>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="text-sm font-medium text-content">{item.title}</p>
+                  <p className="mt-1 text-xs text-muted-content">
                     {item.description}
                   </p>
                 </div>

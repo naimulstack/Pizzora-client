@@ -165,11 +165,11 @@ export default function MyPizzasPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#09090b] p-6 text-white md:p-10">
+    <div className="min-h-screen bg-surface p-6 text-content md:p-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">My Pizzas</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-muted-content">
             Manage and track all your pizza listings.
           </p>
         </div>
@@ -188,9 +188,9 @@ export default function MyPizzasPage() {
         {statistics.map((item) => (
           <div
             key={item.label}
-            className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5"
+            className="rounded-2xl border border-surface bg-card-surface/60 p-5"
           >
-            <p className="text-sm text-zinc-400">{item.label}</p>
+            <p className="text-sm text-muted-content">{item.label}</p>
             <h2 className="mt-3 text-3xl font-bold">{item.value}</h2>
           </div>
         ))}
@@ -200,21 +200,21 @@ export default function MyPizzasPage() {
       <div className="mt-8 flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
           <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-content"
             size={19}
           />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search pizzas..."
-            className="w-full rounded-xl border border-zinc-800 bg-zinc-900 py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-[#FEC447]"
+            className="w-full rounded-xl border border-surface bg-card-surface py-3 pl-12 pr-4 text-sm text-content outline-none focus:border-[#FEC447]"
           />
         </div>
 
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="rounded-xl border border-zinc-800 bg-zinc-900 px-5 py-3 text-sm text-white outline-none focus:border-[#FEC447]"
+          className="rounded-xl border border-surface bg-card-surface px-5 py-3 text-sm text-content outline-none focus:border-[#FEC447]"
         >
           <option value="All">All Status</option>
           <option value="Approved">Approved</option>
@@ -224,22 +224,22 @@ export default function MyPizzasPage() {
       </div>
 
       {/* Pizza List */}
-      <div className="mt-8 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50">
-        <div className="border-b border-zinc-800 px-6 py-5">
+      <div className="mt-8 overflow-hidden rounded-2xl border border-surface bg-card-surface/50">
+        <div className="border-b border-surface px-6 py-5">
           <h2 className="font-bold">Pizza Listings</h2>
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-zinc-400">
+          <div className="p-12 text-center text-muted-content">
             Loading your pizzas...
           </div>
         ) : filteredPizzas.length === 0 ? (
           <div className="p-12 text-center">
-            <Pizza className="mx-auto text-zinc-600" size={40} />
-            <p className="mt-4 text-zinc-400">No pizzas found.</p>
+            <Pizza className="mx-auto text-muted-content" size={40} />
+            <p className="mt-4 text-muted-content">No pizzas found.</p>
           </div>
         ) : (
-          <div className="divide-y divide-zinc-800">
+          <div className="divide-y divide-surface">
             {filteredPizzas.map((pizza) => {
               const status = getStatus(pizza.status);
               const Icon = statusIcon[status] || Clock;
@@ -247,7 +247,7 @@ export default function MyPizzasPage() {
               return (
                 <div
                   key={pizza._id}
-                  className="flex flex-col gap-5 p-5 transition hover:bg-zinc-800/30 md:flex-row md:items-center"
+                  className="flex flex-col gap-5 p-5 transition hover:bg-card-surface/30 md:flex-row md:items-center"
                 >
                   <img
                     src={pizza.image}
@@ -257,7 +257,7 @@ export default function MyPizzasPage() {
 
                   <div className="min-w-0 flex-1">
                     <h3 className="font-bold">{pizza.name}</h3>
-                    <p className="mt-1 text-sm text-zinc-500">
+                    <p className="mt-1 text-sm text-muted-content">
                       {pizza.category} · Added{" "}
                       {pizza.createdAt
                         ? new Date(pizza.createdAt).toLocaleDateString()
@@ -282,7 +282,7 @@ export default function MyPizzasPage() {
                       type="button"
                       onClick={() => setSelectedPizza(pizza)}
                       title="View Pizza"
-                      className="rounded-lg border border-zinc-700 p-2 text-zinc-400 hover:border-[#FEC447] hover:text-[#FEC447]"
+                      className="rounded-lg border border-surface p-2 text-muted-content hover:border-[#FEC447] hover:text-[#FEC447]"
                     >
                       <Eye size={17} />
                     </button>
@@ -290,7 +290,7 @@ export default function MyPizzasPage() {
                     <Link
                       href={`/dashboard/vendor/pizzas/edit/${pizza._id}`}
                       title="Edit Pizza"
-                      className="rounded-lg border border-zinc-700 p-2 text-zinc-400 hover:border-[#FEC447] hover:text-[#FEC447]"
+                      className="rounded-lg border border-surface p-2 text-muted-content hover:border-[#FEC447] hover:text-[#FEC447]"
                     >
                       <Pencil size={17} />
                     </Link>
@@ -300,7 +300,7 @@ export default function MyPizzasPage() {
                       disabled={deletingId === pizza._id}
                       onClick={() => handleDelete(pizza._id)}
                       title="Delete Pizza"
-                      className="rounded-lg border border-zinc-700 p-2 text-zinc-400 hover:border-red-500 hover:text-red-400 disabled:opacity-50"
+                      className="rounded-lg border border-surface p-2 text-muted-content hover:border-red-500 hover:text-red-400 disabled:opacity-50"
                     >
                       <Trash2 size={17} />
                     </button>
@@ -315,8 +315,8 @@ export default function MyPizzasPage() {
       {/* View Pizza Modal */}
       {selectedPizza && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 text-white shadow-xl">
-            <div className="relative h-52 w-full bg-zinc-950">
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-surface bg-card-surface text-content shadow-xl">
+            <div className="relative h-52 w-full bg-surface-deep">
               <img
                 src={selectedPizza.image}
                 alt={selectedPizza.name}
@@ -325,7 +325,7 @@ export default function MyPizzasPage() {
               <button
                 type="button"
                 onClick={() => setSelectedPizza(null)}
-                className="absolute top-3 right-3 rounded-lg bg-black/70 p-2 text-zinc-300 hover:text-white"
+                className="absolute top-3 right-3 rounded-lg bg-black/70 p-2 text-white hover:text-white"
               >
                 <X size={18} />
               </button>
@@ -346,11 +346,11 @@ export default function MyPizzasPage() {
                 </span>
               </div>
 
-              <p className="text-sm leading-relaxed text-zinc-400">
+              <p className="text-sm leading-relaxed text-muted-content">
                 {selectedPizza.description || "No description provided."}
               </p>
 
-              <div className="flex items-center justify-between border-t border-zinc-800 pt-3 text-xs text-zinc-400">
+              <div className="flex items-center justify-between border-t border-surface pt-3 text-xs text-muted-content">
                 <span>Location: {selectedPizza.location || "Dhaka"}</span>
                 <span className="capitalize">
                   Status: {getStatus(selectedPizza.status)}

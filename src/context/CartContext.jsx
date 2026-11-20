@@ -7,43 +7,56 @@ import {
   useMemo,
   useState,
 } from "react";
+import { useSession } from "@/lib/auth-client";
 
 const CartContext = createContext(null);
 
-const STORAGE_KEY = "pizzora_cart";
+const GUEST_KEY = "pizzora_cart_guest";
+
+const keyFor = (userId) => (userId ? `pizzora_cart_${userId}` : GUEST_KEY);
 
 export function CartProvider({ children }) {
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+
   const [cart, setCart] = useState([]);
   const [hydrated, setHydrated] = useState(false);
 
+  // User বদলালে সেই user-এর নিজের কার্ট লোড করা
   useEffect(() => {
     const loadCart = async () => {
+      setHydrated(false);
+
       try {
-        const saved = window.localStorage.getItem(STORAGE_KEY);
+        const saved = window.localStorage.getItem(keyFor(userId));
 
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) setCart(parsed);
+          setCart(Array.isArray(parsed) ? parsed : []);
+        } else {
+          setCart([]);
         }
       } catch (error) {
         console.error("Failed to load cart", error);
+        setCart([]);
       }
 
       setHydrated(true);
     };
 
     loadCart();
-  }, []);
+  }, [userId]);
 
+  // কার্ট বদলালে সঠিক user-এর key-এ সেভ
   useEffect(() => {
     if (!hydrated) return;
 
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+      window.localStorage.setItem(keyFor(userId), JSON.stringify(cart));
     } catch (error) {
       console.error("Failed to save cart", error);
     }
-  }, [cart, hydrated]);
+  }, [cart, userId, hydrated]);
 
   const addToCart = (pizza, qty = 1) => {
     setCart((prev) => {

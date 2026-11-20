@@ -18,7 +18,7 @@ const API_URL = (
 ).replace(/\/$/, "");
 
 const INPUT_CLASS =
-  "mt-2 w-full rounded-xl border border-zinc-800 bg-[#09090b] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-orange-500";
+  "mt-2 w-full rounded-xl border border-surface bg-surface px-4 py-3 text-sm text-content outline-none placeholder:text-muted-content focus:border-orange-500";
 
 const STATUS_BADGE = {
   pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
@@ -121,7 +121,7 @@ export default function BecomeVendorPage() {
     user?.role === "vendor" || myRequests.some((r) => r.status === "approved");
 
   return (
-    <main className="min-h-screen bg-[#09090b] px-4 py-10 text-white sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-surface px-4 py-10 text-content sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-8">
         <div>
           <p className="text-sm font-medium text-orange-400">
@@ -130,20 +130,20 @@ export default function BecomeVendorPage() {
           <h1 className="mt-2 text-3xl font-bold tracking-tight">
             Become a Vendor
           </h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-muted-content">
             Start with a customer account, apply to open your kitchen on Pizzora,
             and get access to the Vendor Dashboard once approved by an admin.
           </p>
         </div>
 
         {loadingSession ? (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8 text-sm text-zinc-400">
+          <div className="rounded-2xl border border-surface bg-card-surface/50 p-8 text-sm text-muted-content">
             Checking your account...
           </div>
         ) : !user ? (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8">
+          <div className="rounded-2xl border border-surface bg-card-surface/50 p-8">
             <h2 className="text-lg font-bold">Sign in Required</h2>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-muted-content">
               Please sign in with your account first so we can link your vendor
               application to your profile.
             </p>
@@ -183,7 +183,7 @@ export default function BecomeVendorPage() {
 
             <form
               onSubmit={handleSubmit}
-              className="space-y-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 md:p-8"
+              className="space-y-6 rounded-2xl border border-surface bg-card-surface/50 p-6 md:p-8"
             >
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-orange-500/10 p-3 text-orange-400">
@@ -191,7 +191,7 @@ export default function BecomeVendorPage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold">Kitchen / Shop Details</h2>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-muted-content">
                     Applying as {user.name || "User"} ({user.email})
                   </p>
                 </div>
@@ -199,7 +199,7 @@ export default function BecomeVendorPage() {
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label className="text-sm text-zinc-300">
+                  <label className="text-sm text-content">
                     Kitchen / Shop Name *
                   </label>
                   <input
@@ -213,7 +213,7 @@ export default function BecomeVendorPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm text-zinc-300">
+                  <label className="text-sm text-content">
                     Contact Phone *
                   </label>
                   <input
@@ -227,7 +227,7 @@ export default function BecomeVendorPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-sm text-zinc-300">
+                  <label className="text-sm text-content">
                     Kitchen Location *
                   </label>
                   <input
@@ -241,7 +241,7 @@ export default function BecomeVendorPage() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-sm text-zinc-300">
+                  <label className="text-sm text-content">
                     Specialty / Short Note
                   </label>
                   <textarea
@@ -277,11 +277,11 @@ export default function BecomeVendorPage() {
                 {myRequests.map((req) => (
                   <div
                     key={req._id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-4"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-surface bg-card-surface/40 p-4"
                   >
                     <div>
-                      <p className="font-semibold text-white">{req.shopName}</p>
-                      <p className="text-xs text-zinc-400">
+                      <p className="font-semibold text-content">{req.shopName}</p>
+                      <p className="text-xs text-muted-content">
                         {req.location || "Bangladesh"} · {req.phone || "No phone"}
                       </p>
                     </div>

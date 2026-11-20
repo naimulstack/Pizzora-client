@@ -135,7 +135,7 @@ const AdminUsersPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#09090b] p-5 text-white md:p-8">
+    <div className="min-h-screen bg-surface p-5 text-content md:p-8">
       <div className="mx-auto max-w-7xl space-y-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -145,7 +145,7 @@ const AdminUsersPage = () => {
             <h1 className="text-3xl font-bold tracking-tight">
               Users Management
             </h1>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-muted-content">
               Manage all registered users and their account roles.
             </p>
           </div>
@@ -153,7 +153,7 @@ const AdminUsersPage = () => {
           <button
             type="button"
             onClick={() => fetchUsers(true)}
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-300 transition hover:border-orange-500/50 hover:text-orange-400"
+            className="inline-flex items-center gap-2 rounded-xl border border-surface bg-card-surface px-4 py-2.5 text-sm font-medium text-content transition hover:border-orange-500/50 hover:text-orange-400"
           >
             <RefreshCw size={16} />
             Refresh
@@ -167,10 +167,10 @@ const AdminUsersPage = () => {
             return (
               <div
                 key={item.label}
-                className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5"
+                className="rounded-2xl border border-surface bg-card-surface/50 p-5"
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-zinc-400">{item.label}</p>
+                  <p className="text-sm text-muted-content">{item.label}</p>
                   <Icon size={20} className={item.color} />
                 </div>
                 <h2 className="mt-4 text-3xl font-bold">{item.value}</h2>
@@ -179,11 +179,11 @@ const AdminUsersPage = () => {
           })}
         </div>
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50">
-          <div className="flex flex-col gap-4 border-b border-zinc-800 p-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="rounded-2xl border border-surface bg-card-surface/50">
+          <div className="flex flex-col gap-4 border-b border-surface p-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-lg font-semibold">All Users</h2>
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-muted-content">
                 View and manage registered accounts.
               </p>
             </div>
@@ -192,21 +192,21 @@ const AdminUsersPage = () => {
               <div className="relative">
                 <Search
                   size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-content"
                 />
                 <input
                   type="text"
                   placeholder="Search users..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-800 bg-[#09090b] py-2.5 pl-10 pr-4 text-sm outline-none focus:border-orange-500 sm:w-64"
+                  className="w-full rounded-xl border border-surface bg-surface py-2.5 pl-10 pr-4 text-sm outline-none focus:border-orange-500 sm:w-64"
                 />
               </div>
 
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="rounded-xl border border-zinc-800 bg-[#09090b] px-4 py-2.5 text-sm outline-none focus:border-orange-500"
+                className="rounded-xl border border-surface bg-surface px-4 py-2.5 text-sm outline-none focus:border-orange-500"
               >
                 <option value="All">All Roles</option>
                 <option value="admin">Admin</option>
@@ -218,7 +218,7 @@ const AdminUsersPage = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[740px] text-left text-sm">
-              <thead className="bg-zinc-950/70 text-xs uppercase text-zinc-500">
+              <thead className="bg-surface-deep/70 text-xs uppercase text-muted-content">
                 <tr>
                   <th className="px-6 py-4">User</th>
                   <th className="px-6 py-4">Email</th>
@@ -228,12 +228,12 @@ const AdminUsersPage = () => {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-surface">
                 {loading ? (
                   <tr>
                     <td
                       colSpan={5}
-                      className="px-6 py-12 text-center text-zinc-400"
+                      className="px-6 py-12 text-center text-muted-content"
                     >
                       Loading users...
                     </td>
@@ -242,7 +242,7 @@ const AdminUsersPage = () => {
                   <tr>
                     <td
                       colSpan={5}
-                      className="px-6 py-12 text-center text-zinc-500"
+                      className="px-6 py-12 text-center text-muted-content"
                     >
                       No users found.
                     </td>
@@ -256,7 +256,7 @@ const AdminUsersPage = () => {
                     return (
                       <tr
                         key={userKey}
-                        className="transition hover:bg-zinc-800/30"
+                        className="transition hover:bg-card-surface/30"
                       >
                         <td className="px-6 py-5">
                           <div className="flex items-center gap-3">
@@ -267,7 +267,7 @@ const AdminUsersPage = () => {
                           </div>
                         </td>
 
-                        <td className="px-6 py-5 text-zinc-400">
+                        <td className="px-6 py-5 text-muted-content">
                           <span className="flex items-center gap-2">
                             <Mail size={15} />
                             {user.email || "No email"}
@@ -284,7 +284,7 @@ const AdminUsersPage = () => {
                           </span>
                         </td>
 
-                        <td className="px-6 py-5 text-zinc-400">
+                        <td className="px-6 py-5 text-muted-content">
                           {user.createdAt
                             ? new Date(user.createdAt).toLocaleDateString(
                                 "en-US",
@@ -304,7 +304,7 @@ const AdminUsersPage = () => {
                             onChange={(e) =>
                               handleRoleChange(userKey, e.target.value)
                             }
-                            className="rounded-lg border border-zinc-700 bg-[#09090b] px-3 py-1.5 text-xs font-medium text-white outline-none focus:border-orange-500 disabled:opacity-50"
+                            className="rounded-lg border border-surface bg-surface px-3 py-1.5 text-xs font-medium text-content outline-none focus:border-orange-500 disabled:opacity-50"
                           >
                             <option value="customer">Customer</option>
                             <option value="vendor">Vendor</option>
@@ -319,8 +319,8 @@ const AdminUsersPage = () => {
             </table>
           </div>
 
-          <div className="flex items-center justify-between border-t border-zinc-800 px-5 py-4">
-            <p className="text-xs text-zinc-500">
+          <div className="flex items-center justify-between border-t border-surface px-5 py-4">
+            <p className="text-xs text-muted-content">
               Showing {filteredUsers.length} of {users.length} users
             </p>
 
@@ -328,7 +328,7 @@ const AdminUsersPage = () => {
               <button
                 type="button"
                 disabled
-                className="rounded-lg border border-zinc-800 p-2 text-zinc-600"
+                className="rounded-lg border border-surface p-2 text-muted-content"
               >
                 <ChevronLeft size={17} />
               </button>
@@ -341,7 +341,7 @@ const AdminUsersPage = () => {
               <button
                 type="button"
                 disabled
-                className="rounded-lg border border-zinc-800 p-2 text-zinc-600"
+                className="rounded-lg border border-surface p-2 text-muted-content"
               >
                 <ChevronRight size={17} />
               </button>

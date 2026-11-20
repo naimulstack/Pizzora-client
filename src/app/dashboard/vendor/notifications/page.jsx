@@ -110,7 +110,7 @@ export default function VendorNotificationsPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Notifications</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-muted-content">
             Stay updated with your business activities.
           </p>
         </div>
@@ -119,7 +119,7 @@ export default function VendorNotificationsPage() {
           type="button"
           onClick={markAllRead}
           disabled={unreadCount === 0}
-          className="flex items-center gap-2 rounded-xl border border-zinc-700 px-4 py-3 text-sm font-semibold text-[#FEC447] transition hover:bg-zinc-800 disabled:opacity-40"
+          className="flex items-center gap-2 rounded-xl border border-surface px-4 py-3 text-sm font-semibold text-[#FEC447] transition hover:bg-card-surface disabled:opacity-40"
         >
           <CheckCheck size={18} />
           Mark All as Read
@@ -128,13 +128,13 @@ export default function VendorNotificationsPage() {
 
       {/* Summary */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
+        <div className="rounded-2xl border border-surface bg-card-surface/60 p-6">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-[#FEC447]/10 p-3 text-[#FEC447]">
               <Bell size={22} />
             </div>
             <div>
-              <p className="text-sm text-zinc-400">Total Notifications</p>
+              <p className="text-sm text-muted-content">Total Notifications</p>
               <h2 className="mt-1 text-2xl font-bold">
                 {notifications.length}
               </h2>
@@ -142,13 +142,13 @@ export default function VendorNotificationsPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
+        <div className="rounded-2xl border border-surface bg-card-surface/60 p-6">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-yellow-500/10 p-3 text-yellow-400">
               <Clock size={22} />
             </div>
             <div>
-              <p className="text-sm text-zinc-400">Unread Notifications</p>
+              <p className="text-sm text-muted-content">Unread Notifications</p>
               <h2 className="mt-1 text-2xl font-bold">
                 {unreadCount}
               </h2>
@@ -158,31 +158,31 @@ export default function VendorNotificationsPage() {
       </div>
 
       {/* Notification List */}
-      <div className="mt-8 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60">
-        <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-5">
+      <div className="mt-8 overflow-hidden rounded-2xl border border-surface bg-card-surface/60">
+        <div className="flex items-center justify-between border-b border-surface px-6 py-5">
           <h2 className="font-bold">Recent Notifications</h2>
-          <span className="text-xs text-zinc-500">
+          <span className="text-xs text-muted-content">
             {unreadCount} unread
           </span>
         </div>
 
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-16 text-center">
-            <Bell size={45} className="text-zinc-600" />
+            <Bell size={45} className="text-muted-content" />
             <h3 className="mt-4 font-semibold">All caught up!</h3>
-            <p className="mt-2 text-sm text-zinc-500">
+            <p className="mt-2 text-sm text-muted-content">
               You don't have any notifications right now.
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-zinc-800">
+          <div className="divide-y divide-surface">
             {notifications.map((notification) => {
               const Icon = notificationIcons[notification.type];
 
               return (
                 <div
                   key={notification.id}
-                  className={`flex flex-col gap-4 p-5 transition hover:bg-zinc-800/30 sm:flex-row sm:items-start ${
+                  className={`flex flex-col gap-4 p-5 transition hover:bg-card-surface/30 sm:flex-row sm:items-start ${
                     !notification.read ? "bg-[#FEC447]/[0.03]" : ""
                   }`}
                 >
@@ -203,11 +203,11 @@ export default function VendorNotificationsPage() {
                       )}
                     </div>
 
-                    <p className="mt-2 text-sm leading-6 text-zinc-400">
+                    <p className="mt-2 text-sm leading-6 text-muted-content">
                       {notification.description}
                     </p>
 
-                    <p className="mt-3 text-xs text-zinc-500">
+                    <p className="mt-3 text-xs text-muted-content">
                       {notification.time}
                     </p>
                   </div>
@@ -218,7 +218,7 @@ export default function VendorNotificationsPage() {
                         type="button"
                         title="Mark as read"
                         onClick={() => markRead(notification.id)}
-                        className="rounded-lg border border-zinc-700 p-2 text-zinc-400 hover:border-[#FEC447] hover:text-[#FEC447]"
+                        className="rounded-lg border border-surface p-2 text-muted-content hover:border-[#FEC447] hover:text-[#FEC447]"
                       >
                         <CheckCheck size={17} />
                       </button>
@@ -230,7 +230,7 @@ export default function VendorNotificationsPage() {
                       onClick={() =>
                         deleteNotification(notification.id)
                       }
-                      className="rounded-lg border border-zinc-700 p-2 text-zinc-400 hover:border-red-500 hover:text-red-400"
+                      className="rounded-lg border border-surface p-2 text-muted-content hover:border-red-500 hover:text-red-400"
                     >
                       <Trash2 size={17} />
                     </button>

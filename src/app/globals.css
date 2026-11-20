@@ -152,3 +152,49 @@
 .animate-float-pizza {
   animation: float-pizza 4s ease-in-out infinite;
 }
+
+/* Theme-aware surfaces — homepage colors applied site-wide.
+   Light mode = bright surfaces, dark mode = deep surfaces. */
+@utility bg-surface {
+  background-color: var(--background);
+}
+
+@utility bg-card-surface {
+  background-color: var(--card);
+}
+
+@utility bg-surface-deep {
+  background-color: var(--popover);
+}
+
+@utility text-content {
+  color: var(--foreground);
+}
+
+@utility text-muted-content {
+  color: var(--muted-foreground);
+}
+
+@utility border-surface {
+  border-color: var(--border);
+}
+
+@utility divide-surface {
+  border-color: var(--border);
+}
+
+@utility bg-accent {
+  background-color: #FEC447;
+}
+
+@utility text-accent {
+  color: #FEC447;
+}
+
+@utility border-accent {
+  border-color: #FEC447;
+}
+
+@utility bg-accent-soft {
+  background-color: color-mix(in oklab, #FEC447 12%, transparent);
+}

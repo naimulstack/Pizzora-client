@@ -80,13 +80,13 @@ export default function CustomerProfilePage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[#09090b] px-5 text-white">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-5 text-content">
         <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-500/10 ring-1 ring-orange-500/20">
           <UserRound className="h-9 w-9 text-orange-400" />
         </div>
 
         <h1 className="mt-6 text-2xl font-bold">You are not logged in</h1>
-        <p className="mt-2 max-w-sm text-center text-sm text-zinc-400">
+        <p className="mt-2 max-w-sm text-center text-sm text-muted-content">
           Please sign in to view your profile, orders and account settings.
         </p>
 
@@ -113,8 +113,8 @@ export default function CustomerProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white">
-      <header className="sticky top-0 z-30 border-b border-zinc-800/80 bg-[#09090b]/85 backdrop-blur-md">
+    <div className="min-h-screen bg-surface text-content">
+      <header className="sticky top-0 z-30 border-b border-surface/80 bg-surface/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link
@@ -129,7 +129,7 @@ export default function CustomerProfilePage() {
               <p className="text-xs font-medium tracking-wide text-orange-400 uppercase">
                 Pizzora
               </p>
-              <h1 className="text-lg font-bold tracking-tight text-white sm:text-xl">
+              <h1 className="text-lg font-bold tracking-tight text-content sm:text-xl">
                 My Profile
               </h1>
             </div>
@@ -137,7 +137,7 @@ export default function CustomerProfilePage() {
 
           <Link
             href="/menu"
-            className="hidden items-center gap-2 rounded-xl border border-zinc-800 px-4 py-2.5 text-sm font-semibold text-zinc-300 transition hover:border-orange-500/50 hover:text-orange-400 sm:flex"
+            className="hidden items-center gap-2 rounded-xl border border-surface px-4 py-2.5 text-sm font-semibold text-content transition hover:border-orange-500/50 hover:text-orange-400 sm:flex"
           >
             <Pizza className="h-4 w-4" />
             Order More
@@ -147,7 +147,7 @@ export default function CustomerProfilePage() {
 
       <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         {/* Profile Card */}
-        <Card className="rounded-3xl border-zinc-800 bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-orange-950/20">
+        <Card className="rounded-3xl border-surface bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-orange-950/20">
           <CardContent className="flex flex-col items-center gap-6 p-7 sm:flex-row sm:items-center sm:p-9">
             <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-full ring-4 ring-[#FEC447]/40">
               {user.image ? (
@@ -166,7 +166,7 @@ export default function CustomerProfilePage() {
 
             <div className="min-w-0 flex-1 text-center sm:text-left">
               <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center">
-                <h2 className="text-2xl font-extrabold text-white">
+                <h2 className="text-2xl font-extrabold text-content">
                   {user.name || "Pizzora Customer"}
                 </h2>
 
@@ -175,7 +175,7 @@ export default function CustomerProfilePage() {
                 </Badge>
               </div>
 
-              <div className="mt-3 flex flex-col items-center gap-2 text-sm text-zinc-400 sm:flex-row sm:gap-5">
+              <div className="mt-3 flex flex-col items-center gap-2 text-sm text-muted-content sm:flex-row sm:gap-5">
                 <span className="flex items-center gap-1.5">
                   <Mail className="h-3.5 w-3.5 text-orange-400" />
                   {user.email || "—"}
@@ -197,7 +197,7 @@ export default function CustomerProfilePage() {
             <Button
               onClick={handleSignOut}
               disabled={loggingOut}
-              className="gap-2 rounded-xl border border-zinc-700 px-5 py-3 text-sm font-semibold text-zinc-300 transition hover:border-red-400 hover:text-red-400"
+              className="gap-2 rounded-xl border border-surface px-5 py-3 text-sm font-semibold text-content transition hover:border-red-400 hover:text-red-400"
             >
               {loggingOut ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -217,15 +217,15 @@ export default function CustomerProfilePage() {
             return (
               <Card
                 key={item.label}
-                className="flex items-center gap-4 rounded-2xl border-zinc-800 bg-zinc-900/60 p-5"
+                className="flex items-center gap-4 rounded-2xl border-surface bg-card-surface/60 p-5"
               >
                 <div className="rounded-xl bg-orange-500/10 p-3 text-orange-400">
                   <Icon size={22} />
                 </div>
 
                 <div>
-                  <p className="text-sm text-zinc-400">{item.label}</p>
-                  <h3 className="text-2xl font-bold text-white">
+                  <p className="text-sm text-muted-content">{item.label}</p>
+                  <h3 className="text-2xl font-bold text-content">
                     {item.value}
                   </h3>
                 </div>
@@ -237,10 +237,10 @@ export default function CustomerProfilePage() {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Recent Orders */}
           <div className="lg:col-span-2">
-            <Card className="rounded-2xl border-zinc-800 bg-zinc-900/60">
+            <Card className="rounded-2xl border-surface bg-card-surface/60">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-bold text-content">
                     Recent Orders
                   </h3>
 
@@ -257,7 +257,7 @@ export default function CustomerProfilePage() {
                   {RECENT_ORDERS.map((order) => (
                     <div
                       key={order.id}
-                      className="flex flex-col gap-3 rounded-2xl border border-zinc-800/90 bg-[#0c0c0f] p-4 sm:flex-row sm:items-center sm:justify-between"
+                      className="flex flex-col gap-3 rounded-2xl border border-surface/90 bg-surface-deep p-4 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400">
@@ -265,10 +265,10 @@ export default function CustomerProfilePage() {
                         </div>
 
                         <div>
-                          <p className="font-semibold text-white">
+                          <p className="font-semibold text-content">
                             {order.pizza}
                           </p>
-                          <p className="text-xs text-zinc-500">
+                          <p className="text-xs text-muted-content">
                             {order.id} • {order.date}
                           </p>
                         </div>
@@ -294,9 +294,9 @@ export default function CustomerProfilePage() {
 
           {/* Quick Actions */}
           <div>
-            <Card className="rounded-2xl border-zinc-800 bg-zinc-900/60">
+            <Card className="rounded-2xl border-surface bg-card-surface/60">
               <CardContent className="p-5">
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-lg font-bold text-content">
                   Quick Actions
                 </h3>
 
@@ -308,13 +308,13 @@ export default function CustomerProfilePage() {
                       <Link
                         key={item.label}
                         href={item.href}
-                        className="flex items-center justify-between rounded-xl border border-zinc-800/90 bg-[#0c0c0f] px-4 py-3.5 text-sm font-medium text-zinc-300 transition hover:border-orange-500/40 hover:text-orange-400"
+                        className="flex items-center justify-between rounded-xl border border-surface/90 bg-surface-deep px-4 py-3.5 text-sm font-medium text-content transition hover:border-orange-500/40 hover:text-orange-400"
                       >
                         <span className="flex items-center gap-3">
                           <Icon size={17} className="text-orange-400" />
                           {item.label}
                         </span>
-                        <ChevronRight size={16} className="text-zinc-600" />
+                        <ChevronRight size={16} className="text-muted-content" />
                       </Link>
                     );
                   })}

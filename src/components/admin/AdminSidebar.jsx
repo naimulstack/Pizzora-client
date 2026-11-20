@@ -82,16 +82,16 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
     return (
         <aside
-            className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-zinc-200 bg-white transition-transform duration-300 dark:border-zinc-800 dark:bg-[#09090b] md:sticky md:top-0 md:h-screen md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
+            className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-zinc-200 bg-white transition-transform duration-300 dark:border-surface dark:bg-surface md:sticky md:top-0 md:h-screen md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"
                 }`}
         >
-            <div className="flex h-20 items-center justify-center border-b border-zinc-200 px-6 dark:border-zinc-800">
+            <div className="flex h-20 items-center justify-center border-b border-zinc-200 px-6 dark:border-surface">
                 <Link
                     href="/dashboard/admin"
                     onClick={onClose}
                     className="flex items-center gap-3"
                 >
-                    <div className="flex h-25 w-25 items-center justify-center rounded-xl text-white">
+                    <div className="flex h-25 w-25 items-center justify-center rounded-xl text-content">
                         <Image
                             src={BrightLogo}
                             alt="Pizzora Logo"
@@ -105,7 +105,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
                 <button
                     onClick={onClose}
-                    className="text-zinc-500 hover:text-zinc-900 md:hidden dark:text-zinc-400 dark:hover:text-white"
+                    className="text-muted-content hover:text-content md:hidden dark:text-muted-content dark:hover:text-content"
                 >
                     <X size={22} />
                 </button>
@@ -114,7 +114,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
             <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-7">
                 {menuItems.map((group) => (
                     <div key={group.title}>
-                        <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-[2px] text-zinc-500">
+                        <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-[2px] text-muted-content">
                             {group.title}
                         </p>
 
@@ -133,7 +133,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
                                         onClick={onClose}
                                         className={`group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${isActive
                                                 ? "bg-orange-500 text-white shadow-lg shadow-orange-500/10"
-                                                : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+                                                : "text-muted-content hover:bg-zinc-100 hover:text-content dark:text-muted-content dark:hover:bg-card-surface dark:hover:text-content"
                                             }`}
                                     >
                                         <Icon size={19} />
@@ -150,12 +150,12 @@ const AdminSidebar = ({ isOpen, onClose }) => {
                 ))}
             </nav>
 
-            <div className="border-t border-zinc-200 p-5 dark:border-zinc-800">
-                <div className="rounded-xl bg-zinc-100 p-4 dark:bg-zinc-900">
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">
+            <div className="border-t border-zinc-200 p-5 dark:border-surface">
+                <div className="rounded-xl bg-zinc-100 p-4 dark:bg-card-surface">
+                    <p className="text-sm font-semibold text-content dark:text-content">
                         Pizzora Admin
                     </p>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-muted-content">
                         Manage your pizza marketplace
                     </p>
                 </div>

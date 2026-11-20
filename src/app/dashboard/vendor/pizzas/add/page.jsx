@@ -35,7 +35,7 @@ const CATEGORIES = [
 const SIZES = ["Regular", "Medium", "Large", "Extra Large"];
 
 const INPUT_CLASS =
-  "w-full rounded-xl border border-zinc-800 bg-[#18181b] px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-[#FEC447]";
+  "w-full rounded-xl border border-surface bg-card-surface px-4 py-3 text-sm text-content outline-none placeholder:text-muted-content focus:border-[#FEC447]";
 
 export default function AddPizzaPage() {
   const router = useRouter();
@@ -155,14 +155,14 @@ export default function AddPizzaPage() {
       <div className="mb-8">
         <Link
           href="/dashboard/vendor/pizzas"
-          className="mb-5 inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FEC447]"
+          className="mb-5 inline-flex items-center gap-2 text-sm text-muted-content hover:text-[#FEC447]"
         >
           <ArrowLeft size={17} />
           Back to My Pizzas
         </Link>
 
         <h1 className="text-3xl font-bold">Add New Pizza</h1>
-        <p className="mt-2 text-sm text-zinc-400">
+        <p className="mt-2 text-sm text-muted-content">
           Add your pizza and submit it for admin approval.
         </p>
       </div>
@@ -172,7 +172,7 @@ export default function AddPizzaPage() {
         {/* Left Side: Form */}
         <form onSubmit={handleSubmit} className="space-y-7 lg:col-span-7">
           {/* Basic Information */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+          <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <div className="mb-6 flex items-center gap-3">
               <Pizza className="text-[#FEC447]" size={23} />
               <h2 className="text-xl font-bold">Basic Information</h2>
@@ -180,7 +180,7 @@ export default function AddPizzaPage() {
 
             <div className="grid gap-5 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="mb-2 block text-sm text-zinc-300">
+                <label className="mb-2 block text-sm text-content">
                   Pizza Name *
                 </label>
                 <input
@@ -194,7 +194,7 @@ export default function AddPizzaPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-zinc-300">
+                <label className="mb-2 block text-sm text-content">
                   Category *
                 </label>
                 <select
@@ -214,13 +214,13 @@ export default function AddPizzaPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-zinc-300">
+                <label className="mb-2 block text-sm text-content">
                   Preparation Time (mins) *
                 </label>
                 <div className="relative">
                   <Clock
                     size={18}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-content"
                   />
                   <input
                     required
@@ -237,7 +237,7 @@ export default function AddPizzaPage() {
             </div>
 
             <div className="mt-5">
-              <label className="mb-2 block text-sm text-zinc-300">
+              <label className="mb-2 block text-sm text-content">
                 Pizza Description *
               </label>
               <textarea
@@ -253,7 +253,7 @@ export default function AddPizzaPage() {
           </section>
 
           {/* Pricing */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+          <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <div className="mb-6 flex items-center gap-3">
               <Tag className="text-[#FEC447]" size={23} />
               <h2 className="text-xl font-bold">Pricing Information</h2>
@@ -261,7 +261,7 @@ export default function AddPizzaPage() {
 
             <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm text-zinc-300">
+                <label className="mb-2 block text-sm text-content">
                   Regular Price (৳) *
                 </label>
                 <input
@@ -277,7 +277,7 @@ export default function AddPizzaPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-zinc-300">
+                <label className="mb-2 block text-sm text-content">
                   Discount Price (৳)
                 </label>
                 <input
@@ -294,13 +294,13 @@ export default function AddPizzaPage() {
           </section>
 
           {/* Pizza Image */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+          <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <div className="mb-6 flex items-center gap-3">
               <ImagePlus className="text-[#FEC447]" size={23} />
               <h2 className="text-xl font-bold">Pizza Image</h2>
             </div>
 
-            <label className="mb-2 block text-sm text-zinc-300">
+            <label className="mb-2 block text-sm text-content">
               Image URL *
             </label>
             <input
@@ -318,7 +318,7 @@ export default function AddPizzaPage() {
                 <img
                   src={formData.image}
                   alt="Pizza preview"
-                  className="h-48 w-64 rounded-xl border border-zinc-700 object-cover"
+                  className="h-48 w-64 rounded-xl border border-surface object-cover"
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
                   }}
@@ -337,14 +337,14 @@ export default function AddPizzaPage() {
           </section>
 
           {/* Ingredients and Sizes */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+          <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <div className="mb-6 flex items-center gap-3">
               <Utensils className="text-[#FEC447]" size={23} />
               <h2 className="text-xl font-bold">Ingredients &amp; Sizes</h2>
             </div>
 
             <div>
-              <label className="mb-2 block text-sm text-zinc-300">
+              <label className="mb-2 block text-sm text-content">
                 Ingredients *
               </label>
               <textarea
@@ -359,7 +359,7 @@ export default function AddPizzaPage() {
             </div>
 
             <div className="mt-6">
-              <label className="mb-3 block text-sm text-zinc-300">
+              <label className="mb-3 block text-sm text-content">
                 Available Sizes *
               </label>
               <div className="flex flex-wrap gap-3">
@@ -371,7 +371,7 @@ export default function AddPizzaPage() {
                     className={`rounded-xl border px-5 py-3 text-sm font-medium transition ${
                       formData.sizes.includes(size)
                         ? "border-[#FEC447] bg-[#FEC447]/10 text-[#FEC447]"
-                        : "border-zinc-700 text-zinc-400 hover:border-zinc-500"
+                        : "border-surface text-muted-content hover:border-zinc-500"
                     }`}
                   >
                     {size}
@@ -382,13 +382,13 @@ export default function AddPizzaPage() {
           </section>
 
           {/* Availability and Location */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 md:p-8">
+          <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <h2 className="mb-6 text-xl font-bold">
               Availability &amp; Location
             </h2>
 
             <div>
-              <label className="mb-2 block text-sm text-zinc-300">
+              <label className="mb-2 block text-sm text-content">
                 Pizza Location *
               </label>
               <input
@@ -409,7 +409,7 @@ export default function AddPizzaPage() {
                 onChange={handleChange}
                 className="h-4 w-4 accent-[#FEC447]"
               />
-              <span className="text-sm text-zinc-300">
+              <span className="text-sm text-content">
                 This pizza is currently available for orders.
               </span>
             </label>
@@ -419,7 +419,7 @@ export default function AddPizzaPage() {
           <div className="flex flex-wrap justify-end gap-3">
             <Link
               href="/dashboard/vendor/pizzas"
-              className="rounded-xl border border-zinc-700 px-6 py-3 text-sm font-semibold text-zinc-300 hover:bg-zinc-800"
+              className="rounded-xl border border-surface px-6 py-3 text-sm font-semibold text-content hover:bg-card-surface"
             >
               Cancel
             </Link>
@@ -439,7 +439,7 @@ export default function AddPizzaPage() {
         <div className="lg:col-span-5">
           <div className="sticky top-8">
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-content">
                 Live Pizza Preview
               </span>
               <span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-[#FEC447]">
@@ -447,9 +447,9 @@ export default function AddPizzaPage() {
               </span>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 shadow-xl">
+            <div className="overflow-hidden rounded-2xl border border-surface bg-card-surface/80 shadow-xl">
               {/* Image Section */}
-              <div className="relative h-56 w-full bg-zinc-800">
+              <div className="relative h-56 w-full bg-card-surface">
                 {formData.image ? (
                   <img
                     src={formData.image}
@@ -460,7 +460,7 @@ export default function AddPizzaPage() {
                     }}
                   />
                 ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900 text-zinc-600">
+                  <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900 text-muted-content">
                     <Pizza size={38} className="mb-2 opacity-50" />
                     <span className="text-xs">Pizza Image Preview</span>
                   </div>
@@ -483,7 +483,7 @@ export default function AddPizzaPage() {
 
                 {/* Category Pill */}
                 <div className="absolute bottom-4 left-4">
-                  <span className="rounded-lg bg-zinc-950/85 px-3 py-1 text-xs font-medium text-[#FEC447] backdrop-blur-sm">
+                  <span className="rounded-lg bg-surface-deep/85 px-3 py-1 text-xs font-medium text-[#FEC447] backdrop-blur-sm">
                     {formData.category || "Category"}
                   </span>
                 </div>
@@ -493,10 +493,10 @@ export default function AddPizzaPage() {
               <div className="p-6">
                 {/* Title & Prep Time */}
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-xl font-bold text-white">
+                  <h3 className="text-xl font-bold text-content">
                     {formData.name || "Your Pizza Name"}
                   </h3>
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-950/60 px-2.5 py-1 text-xs text-zinc-300">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-surface bg-surface-deep/60 px-2.5 py-1 text-xs text-content">
                     <Clock size={13} className="text-[#FEC447]" />
                     {formData.preparationTime
                       ? `${formData.preparationTime} min`
@@ -511,7 +511,7 @@ export default function AddPizzaPage() {
                       <span className="text-2xl font-extrabold text-[#FEC447]">
                         ৳{formData.discountPrice}
                       </span>
-                      <span className="text-sm text-zinc-500 line-through">
+                      <span className="text-sm text-muted-content line-through">
                         ৳{formData.price || "0"}
                       </span>
                     </>
@@ -523,14 +523,14 @@ export default function AddPizzaPage() {
                 </div>
 
                 {/* Description */}
-                <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                <p className="mt-3 text-sm leading-relaxed text-content">
                   {formData.description ||
                     "Your pizza description will appear here. Highlight the crust, sauce, and toppings."}
                 </p>
 
                 {/* Sizes */}
-                <div className="mt-5 border-t border-zinc-800 pt-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <div className="mt-5 border-t border-surface pt-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-content">
                     Available Sizes
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -538,13 +538,13 @@ export default function AddPizzaPage() {
                       formData.sizes.map((size) => (
                         <span
                           key={size}
-                          className="rounded-lg border border-zinc-700 bg-zinc-800/70 px-2.5 py-1 text-xs text-zinc-200"
+                          className="rounded-lg border border-surface bg-card-surface/70 px-2.5 py-1 text-xs text-content"
                         >
                           {size}
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-muted-content">
                         No size selected
                       </span>
                     )}
@@ -552,8 +552,8 @@ export default function AddPizzaPage() {
                 </div>
 
                 {/* Ingredients */}
-                <div className="mt-5 border-t border-zinc-800 pt-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <div className="mt-5 border-t border-surface pt-4">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-content">
                     Ingredients
                   </p>
                   {ingredientList.length > 0 ? (
@@ -561,21 +561,21 @@ export default function AddPizzaPage() {
                       {ingredientList.map((item, idx) => (
                         <span
                           key={`${item}-${idx}`}
-                          className="rounded-md bg-zinc-800 px-2.5 py-1 text-xs text-zinc-300"
+                          className="rounded-md bg-card-surface px-2.5 py-1 text-xs text-content"
                         >
                           {item}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-muted-content">
                       Mozzarella, Chicken, Tomato, Onion...
                     </p>
                   )}
                 </div>
 
                 {/* Location */}
-                <div className="mt-5 flex items-center gap-2 border-t border-zinc-800 pt-4 text-xs text-zinc-400">
+                <div className="mt-5 flex items-center gap-2 border-t border-surface pt-4 text-xs text-muted-content">
                   <MapPin size={14} className="shrink-0 text-[#FEC447]" />
                   <span>{formData.location || "Pizza Location"}</span>
                 </div>

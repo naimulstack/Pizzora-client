@@ -116,27 +116,27 @@ export default function VendorMessagesPage() {
     <div className="min-h-screen p-6 md:p-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Messages</h1>
-        <p className="mt-2 text-sm text-zinc-400">
+        <p className="mt-2 text-sm text-muted-content">
           Communicate with your customers and admin.
         </p>
       </div>
 
-      <div className="grid h-[650px] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 md:grid-cols-[320px_1fr]">
+      <div className="grid h-[650px] overflow-hidden rounded-2xl border border-surface bg-card-surface/60 md:grid-cols-[320px_1fr]">
         {/* Conversation Sidebar */}
-        <div className="flex min-h-0 flex-col border-r border-zinc-800">
-          <div className="border-b border-zinc-800 p-5">
+        <div className="flex min-h-0 flex-col border-r border-surface">
+          <div className="border-b border-surface p-5">
             <h2 className="mb-4 font-bold">Conversations</h2>
 
             <div className="relative">
               <Search
                 size={17}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-content"
               />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search messages..."
-                className="w-full rounded-xl border border-zinc-800 bg-[#18181b] py-3 pl-10 pr-3 text-sm outline-none focus:border-[#FEC447]"
+                className="w-full rounded-xl border border-surface bg-card-surface py-3 pl-10 pr-3 text-sm outline-none focus:border-[#FEC447]"
               />
             </div>
           </div>
@@ -147,10 +147,10 @@ export default function VendorMessagesPage() {
                 key={chat.id}
                 type="button"
                 onClick={() => setActiveChat(chat.id)}
-                className={`flex w-full items-center gap-3 border-b border-zinc-800/70 p-4 text-left transition ${
+                className={`flex w-full items-center gap-3 border-b border-surface/70 p-4 text-left transition ${
                   activeChat === chat.id
                     ? "bg-[#FEC447]/10"
-                    : "hover:bg-zinc-800/40"
+                    : "hover:bg-card-surface/40"
                 }`}
               >
                 <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FEC447]/15 font-bold text-[#FEC447]">
@@ -169,11 +169,11 @@ export default function VendorMessagesPage() {
                     <p className="truncate text-sm font-semibold">
                       {chat.name}
                     </p>
-                    <span className="shrink-0 text-[10px] text-zinc-500">
+                    <span className="shrink-0 text-[10px] text-muted-content">
                       {chat.time}
                     </span>
                   </div>
-                  <p className="mt-1 truncate text-xs text-zinc-500">
+                  <p className="mt-1 truncate text-xs text-muted-content">
                     {chat.message}
                   </p>
                 </div>
@@ -187,7 +187,7 @@ export default function VendorMessagesPage() {
             ))}
 
             {filteredConversations.length === 0 && (
-              <p className="p-5 text-center text-sm text-zinc-500">
+              <p className="p-5 text-center text-sm text-muted-content">
                 No conversations found.
               </p>
             )}
@@ -198,7 +198,7 @@ export default function VendorMessagesPage() {
         <div className="flex min-h-0 flex-col">
           {selectedChat ? (
             <>
-              <div className="flex items-center justify-between border-b border-zinc-800 p-5">
+              <div className="flex items-center justify-between border-b border-surface p-5">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FEC447]/15 font-bold text-[#FEC447]">
                     {selectedChat.name.charAt(0)}
@@ -207,7 +207,7 @@ export default function VendorMessagesPage() {
                     <h3 className="text-sm font-bold">
                       {selectedChat.name}
                     </h3>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-muted-content">
                       {selectedChat.online ? "Online" : "Offline"}
                     </p>
                   </div>
@@ -215,7 +215,7 @@ export default function VendorMessagesPage() {
 
                 <button
                   type="button"
-                  className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800"
+                  className="rounded-lg p-2 text-muted-content hover:bg-card-surface"
                 >
                   <MoreVertical size={20} />
                 </button>
@@ -235,7 +235,7 @@ export default function VendorMessagesPage() {
                       className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                         msg.sender === "vendor"
                           ? "rounded-br-sm bg-[#FEC447] text-black"
-                          : "rounded-bl-sm bg-zinc-800 text-white"
+                          : "rounded-bl-sm bg-card-surface text-content"
                       }`}
                     >
                       <p className="text-sm leading-6">{msg.text}</p>
@@ -243,7 +243,7 @@ export default function VendorMessagesPage() {
                         className={`mt-2 text-right text-[10px] ${
                           msg.sender === "vendor"
                             ? "text-black/60"
-                            : "text-zinc-500"
+                            : "text-muted-content"
                         }`}
                       >
                         {msg.time}
@@ -255,12 +255,12 @@ export default function VendorMessagesPage() {
 
               <form
                 onSubmit={handleSend}
-                className="flex items-center gap-3 border-t border-zinc-800 p-4"
+                className="flex items-center gap-3 border-t border-surface p-4"
               >
                 <button
                   type="button"
                   title="Attachment (coming soon)"
-                  className="text-zinc-500 hover:text-[#FEC447]"
+                  className="text-muted-content hover:text-[#FEC447]"
                 >
                   <Paperclip size={20} />
                 </button>
@@ -269,7 +269,7 @@ export default function VendorMessagesPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Type your message..."
-                  className="min-w-0 flex-1 rounded-xl border border-zinc-800 bg-[#18181b] px-4 py-3 text-sm outline-none focus:border-[#FEC447]"
+                  className="min-w-0 flex-1 rounded-xl border border-surface bg-card-surface px-4 py-3 text-sm outline-none focus:border-[#FEC447]"
                 />
 
                 <button
@@ -282,7 +282,7 @@ export default function VendorMessagesPage() {
               </form>
             </>
           ) : (
-            <div className="flex flex-1 flex-col items-center justify-center text-zinc-500">
+            <div className="flex flex-1 flex-col items-center justify-center text-muted-content">
               <MessageSquare size={45} />
               <p className="mt-4">Select a conversation</p>
             </div>

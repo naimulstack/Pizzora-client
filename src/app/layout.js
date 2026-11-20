@@ -4,6 +4,8 @@ import "./globals.css";
 import NavbarPage from "@/components/homepage/navbar";
 import { Toaster } from "react-hot-toast";
 import { CartProvider } from "@/context/CartContext";
+import Footer from "@/components/homepage/Footer";
+
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -24,6 +26,7 @@ export default function RootLayout({ children }) {
           <NavbarPage />
           {children}
         </CartProvider>
+        <Footer />
       </body>
     </html>
   );

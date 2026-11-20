@@ -81,12 +81,12 @@ export default function AllPizzasPage() {
     );
 
     return (
-        <main className="min-h-screen bg-[#09090b] p-5 text-white md:p-8">
+        <main className="min-h-screen bg-surface p-5 text-content md:p-8">
             <div className="mx-auto max-w-7xl space-y-7">
 
                 <Link
                     href="/dashboard/admin"
-                    className="inline-flex items-center gap-2 text-sm text-zinc-400 transition hover:text-orange-400"
+                    className="inline-flex items-center gap-2 text-sm text-muted-content transition hover:text-orange-400"
                 >
                     <ArrowLeft size={16} />
                     Back to Dashboard
@@ -102,7 +102,7 @@ export default function AllPizzasPage() {
                             Pizza Management
                         </h1>
 
-                        <p className="mt-2 text-sm text-zinc-400">
+                        <p className="mt-2 text-sm text-muted-content">
                             Manage your pizza menu and inventory.
                         </p>
                     </div>
@@ -117,14 +117,14 @@ export default function AllPizzasPage() {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+                    <div className="rounded-2xl border border-surface bg-card-surface/50 p-5">
                         <div className="flex items-center gap-3">
                             <div className="rounded-xl bg-orange-500/10 p-3 text-orange-400">
                                 <Pizza size={22} />
                             </div>
 
                             <div>
-                                <p className="text-sm text-zinc-400">
+                                <p className="text-sm text-muted-content">
                                     Total Pizzas
                                 </p>
                                 <h2 className="text-2xl font-bold">
@@ -134,14 +134,14 @@ export default function AllPizzasPage() {
                         </div>
                     </div>
 
-                    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+                    <div className="rounded-2xl border border-surface bg-card-surface/50 p-5">
                         <div className="flex items-center gap-3">
                             <div className="rounded-xl bg-green-500/10 p-3 text-green-400">
                                 <Pizza size={22} />
                             </div>
 
                             <div>
-                                <p className="text-sm text-zinc-400">
+                                <p className="text-sm text-muted-content">
                                     Available in Menu
                                 </p>
                                 <h2 className="text-2xl font-bold">
@@ -152,11 +152,11 @@ export default function AllPizzasPage() {
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5">
+                <div className="rounded-2xl border border-surface bg-card-surface/50 p-5">
                     <div className="relative max-w-md">
                         <Search
                             size={18}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-content"
                         />
 
                         <input
@@ -164,15 +164,15 @@ export default function AllPizzasPage() {
                             placeholder="Search pizza..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full rounded-xl border border-zinc-800 bg-[#09090b] py-3 pl-10 pr-4 text-sm text-white outline-none transition focus:border-orange-500"
+                            className="w-full rounded-xl border border-surface bg-surface py-3 pl-10 pr-4 text-sm text-content outline-none transition focus:border-orange-500"
                         />
                     </div>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50">
-                    <div className="border-b border-zinc-800 p-5">
+                <div className="overflow-hidden rounded-2xl border border-surface bg-card-surface/50">
+                    <div className="border-b border-surface p-5">
                         <h2 className="font-semibold">All Pizzas</h2>
-                        <p className="mt-1 text-sm text-zinc-500">
+                        <p className="mt-1 text-sm text-muted-content">
                             Manage your pizza products.
                         </p>
                     </div>
@@ -183,18 +183,18 @@ export default function AllPizzasPage() {
                         </div>
                     ) : filteredPizzas.length === 0 ? (
                         <div className="py-20 text-center">
-                            <Pizza className="mx-auto mb-3 text-zinc-600" size={40} />
-                            <p className="font-medium text-zinc-300">
+                            <Pizza className="mx-auto mb-3 text-muted-content" size={40} />
+                            <p className="font-medium text-content">
                                 No pizzas found
                             </p>
-                            <p className="mt-1 text-sm text-zinc-500">
+                            <p className="mt-1 text-sm text-muted-content">
                                 Add a new pizza to your menu.
                             </p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full min-w-[700px] text-left text-sm">
-                                <thead className="bg-zinc-950/50 text-xs uppercase text-zinc-500">
+                                <thead className="bg-surface-deep/50 text-xs uppercase text-muted-content">
                                     <tr>
                                         <th className="px-6 py-4">Pizza</th>
                                         <th className="px-6 py-4">Category</th>
@@ -203,11 +203,11 @@ export default function AllPizzasPage() {
                                     </tr>
                                 </thead>
 
-                                <tbody className="divide-y divide-zinc-800">
+                                <tbody className="divide-y divide-surface">
                                     {filteredPizzas.map((pizza) => (
                                         <tr
                                             key={pizza._id}
-                                            className="transition hover:bg-zinc-800/30"
+                                            className="transition hover:bg-card-surface/30"
                                         >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
@@ -218,17 +218,17 @@ export default function AllPizzasPage() {
                                                     />
 
                                                     <div>
-                                                        <p className="font-semibold text-white">
+                                                        <p className="font-semibold text-content">
                                                             {pizza.name || pizza.title}
                                                         </p>
-                                                        <p className="mt-1 text-xs text-zinc-500">
+                                                        <p className="mt-1 text-xs text-muted-content">
                                                             ID: {pizza._id.slice(-6)}
                                                         </p>
                                                     </div>
                                                 </div>
                                             </td>
 
-                                            <td className="px-6 py-4 text-zinc-400">
+                                            <td className="px-6 py-4 text-muted-content">
                                                 {pizza.category || "Uncategorized"}
                                             </td>
 
@@ -242,27 +242,27 @@ export default function AllPizzasPage() {
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>
                                                             <button
-                                                                className="rounded-lg border border-zinc-700 p-2 text-red-400 transition hover:bg-red-500/10"
+                                                                className="rounded-lg border border-surface p-2 text-red-400 transition hover:bg-red-500/10"
                                                                 title="Delete Pizza"
                                                             >
                                                                 <Trash2 size={16} />
                                                             </button>
                                                         </AlertDialogTrigger>
 
-                                                        <AlertDialogContent className="border-zinc-800 bg-[#18181b] text-white">
+                                                        <AlertDialogContent className="border-surface bg-card-surface text-content">
                                                             <AlertDialogHeader>
                                                                 <AlertDialogTitle>
                                                                     Delete Pizza?
                                                                 </AlertDialogTitle>
 
-                                                                <AlertDialogDescription className="text-zinc-400">
+                                                                <AlertDialogDescription className="text-muted-content">
                                                                     Are you sure you want to delete this pizza?
                                                                     This action cannot be undone.
                                                                 </AlertDialogDescription>
                                                             </AlertDialogHeader>
 
                                                             <AlertDialogFooter>
-                                                                <AlertDialogCancel className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800 hover:text-white">
+                                                                <AlertDialogCancel className="border-surface bg-transparent text-content hover:bg-card-surface hover:text-content">
                                                                     Cancel
                                                                 </AlertDialogCancel>
 

@@ -76,6 +76,8 @@ const NavbarPage = () => {
     }
   };
 
+  const cartHref = user ? "/cart" : "/sign-in";
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Explore Menu", href: "/menu" },
@@ -135,17 +137,15 @@ const NavbarPage = () => {
           </button>
 
           <Link
-            href="/cart"
+            href={cartHref}
             aria-label="Shopping cart"
             className="relative rounded-full p-2.5 transition hover:bg-[#FEC447]/10 hover:text-[#FEC447]"
           >
             <ShoppingCart size={21} />
 
-            {totalItems > 0 && (
-              <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FEC447] px-1 text-[10px] font-bold text-black">
-                {totalItems}
-              </span>
-            )}
+            <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#FEC447] px-1 text-[10px] font-bold text-black">
+              {totalItems}
+            </span>
           </Link>
 
           {/* Theme Toggle */}
@@ -234,17 +234,15 @@ const NavbarPage = () => {
             ))}
 
             <Link
-              href="/cart"
+              href={cartHref}
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 text-sm font-medium transition hover:text-[#FEC447]"
             >
               <ShoppingCart size={17} />
               Cart
-              {totalItems > 0 && (
-                <span className="rounded-full bg-[#FEC447] px-2 py-0.5 text-xs font-bold text-black">
-                  {totalItems}
-                </span>
-              )}
+              <span className="rounded-full bg-[#FEC447] px-2 py-0.5 text-xs font-bold text-black">
+                {totalItems}
+              </span>
             </Link>
 
             {user ? (

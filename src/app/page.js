@@ -3,7 +3,6 @@ import { connection } from "next/server";
 import HeroSection from "@/components/homepage/banner";
 import BecomeVendor from "@/components/homepage/BecomeVendor";
 import FeaturedPizzas from "@/components/homepage/FeaturedPizzas";
-import Footer from "@/components/homepage/Footer";
 import HowItWorks from "@/components/homepage/HowItWorks";
 import Newsletter from "@/components/homepage/Newsletter";
 import PopularCategories from "@/components/homepage/PopularCategories";
@@ -31,7 +30,7 @@ async function HomeContent() {
       <BecomeVendor />
       <Reviews />
       <Newsletter />
-      <Footer />
+      
     </>
   );
 }

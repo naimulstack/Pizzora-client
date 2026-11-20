@@ -80,11 +80,11 @@ const AdminNotificationsPage = () => {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <main className="min-h-screen bg-[#09090b] p-5 text-white md:p-8">
+    <main className="min-h-screen bg-surface p-5 text-content md:p-8">
       <div className="mx-auto max-w-4xl space-y-7">
         <Link
           href="/dashboard/admin"
-          className="inline-flex items-center gap-2 text-sm text-zinc-400 transition hover:text-orange-400"
+          className="inline-flex items-center gap-2 text-sm text-muted-content transition hover:text-orange-400"
         >
           <ArrowLeft size={16} />
           Back to Dashboard
@@ -103,7 +103,7 @@ const AdminNotificationsPage = () => {
                 </span>
               )}
             </h1>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-muted-content">
               See which new pizzas or requests vendors submitted for approval.
             </p>
           </div>
@@ -112,7 +112,7 @@ const AdminNotificationsPage = () => {
             <button
               type="button"
               onClick={markAllAsRead}
-              className="inline-flex w-fit items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-200 transition hover:border-orange-500 hover:text-orange-400"
+              className="inline-flex w-fit items-center gap-2 rounded-xl border border-surface bg-card-surface px-4 py-2.5 text-sm font-medium text-content transition hover:border-orange-500 hover:text-orange-400"
             >
               <CheckCheck size={16} />
               Mark all as read
@@ -122,14 +122,14 @@ const AdminNotificationsPage = () => {
 
         <div className="space-y-3">
           {loading ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-10 text-center text-sm text-zinc-400">
+            <div className="rounded-2xl border border-surface bg-card-surface/50 p-10 text-center text-sm text-muted-content">
               Loading notifications...
             </div>
           ) : notifications.length === 0 ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-14 text-center">
-              <Bell className="mx-auto mb-3 h-10 w-10 text-zinc-600" />
+            <div className="rounded-2xl border border-surface bg-card-surface/50 p-14 text-center">
+              <Bell className="mx-auto mb-3 h-10 w-10 text-muted-content" />
               <h2 className="text-lg font-semibold">No notifications yet</h2>
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-muted-content">
                 When a vendor submits a new pizza request, it will show up here.
               </p>
             </div>
@@ -139,15 +139,15 @@ const AdminNotificationsPage = () => {
                 key={item._id}
                 className={`flex flex-col justify-between gap-4 rounded-2xl border p-5 transition sm:flex-row sm:items-center ${
                   item.isRead
-                    ? "border-zinc-800/80 bg-zinc-900/35"
-                    : "border-orange-500/40 bg-zinc-900/80"
+                    ? "border-surface/80 bg-card-surface/35"
+                    : "border-orange-500/40 bg-card-surface/80"
                 }`}
               >
                 <div className="flex items-start gap-4">
                   <div
                     className={`mt-0.5 rounded-xl p-2.5 ${
                       item.isRead
-                        ? "bg-zinc-800 text-zinc-400"
+                        ? "bg-card-surface text-muted-content"
                         : "bg-orange-500/15 text-orange-400"
                     }`}
                   >
@@ -156,7 +156,7 @@ const AdminNotificationsPage = () => {
 
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-semibold text-white">
+                      <h3 className="font-semibold text-content">
                         {item.title || "New Pizza Request"}
                       </h3>
                       {!item.isRead && (
@@ -166,11 +166,11 @@ const AdminNotificationsPage = () => {
                       )}
                     </div>
 
-                    <p className="text-sm text-zinc-300">
+                    <p className="text-sm text-content">
                       {item.message || "A vendor submitted a pizza for review."}
                     </p>
 
-                    <p className="flex items-center gap-1.5 pt-1 text-xs text-zinc-500">
+                    <p className="flex items-center gap-1.5 pt-1 text-xs text-muted-content">
                       <Clock size={13} />
                       {item.createdAt
                         ? new Date(item.createdAt).toLocaleString("en-US", {
@@ -201,7 +201,7 @@ const AdminNotificationsPage = () => {
                     <button
                       type="button"
                       onClick={() => markAsRead(item._id)}
-                      className="rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs font-medium text-zinc-300 transition hover:border-zinc-600 hover:text-white"
+                      className="rounded-xl border border-surface bg-card-surface px-3 py-2 text-xs font-medium text-content transition hover:border-surface hover:text-content"
                     >
                       Mark read
                     </button>

@@ -54,8 +54,8 @@ export default function CartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white">
-      <header className="sticky top-0 z-30 border-b border-zinc-800/80 bg-[#09090b]/85 backdrop-blur-md">
+    <div className="min-h-screen bg-surface text-content">
+      <header className="sticky top-0 z-30 border-b border-surface/80 bg-surface/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link
@@ -70,7 +70,7 @@ export default function CartPage() {
               <p className="text-xs font-medium tracking-wide text-orange-400 uppercase">
                 Pizzora Cart
               </p>
-              <h1 className="text-lg font-bold tracking-tight text-white sm:text-xl">
+              <h1 className="text-lg font-bold tracking-tight text-content sm:text-xl">
                 Your Cart ({totalItems})
               </h1>
             </div>
@@ -78,7 +78,7 @@ export default function CartPage() {
 
           <Link
             href="/menu"
-            className="hidden items-center gap-2 rounded-xl border border-zinc-800 px-4 py-2.5 text-sm font-semibold text-zinc-300 transition hover:border-orange-500/50 hover:text-orange-400 sm:flex"
+            className="hidden items-center gap-2 rounded-xl border border-surface px-4 py-2.5 text-sm font-semibold text-content transition hover:border-orange-500/50 hover:text-orange-400 sm:flex"
           >
             <Pizza className="h-4 w-4" />
             Continue Shopping
@@ -92,16 +92,16 @@ export default function CartPage() {
             <Loader2 className="animate-spin text-orange-400" size={32} />
           </div>
         ) : cart.length === 0 ? (
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/40 px-6 py-20 text-center">
+          <div className="rounded-3xl border border-surface bg-card-surface/40 px-6 py-20 text-center">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-500/10 ring-1 ring-orange-500/20">
               <ShoppingCart className="h-9 w-9 text-orange-400" />
             </div>
 
-            <h2 className="mt-6 text-2xl font-bold text-white">
+            <h2 className="mt-6 text-2xl font-bold text-content">
               Your cart is empty
             </h2>
 
-            <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-400">
+            <p className="mx-auto mt-2 max-w-sm text-sm text-muted-content">
               Browse the menu and add some delicious pizzas to get started.
             </p>
 
@@ -118,7 +118,7 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="space-y-4 lg:col-span-2">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white">
+                <h2 className="text-lg font-bold text-content">
                   Cart Items ({totalItems})
                 </h2>
 
@@ -128,7 +128,7 @@ export default function CartPage() {
                     clearCart();
                     toast.success("Cart cleared");
                   }}
-                  className="text-sm font-medium text-zinc-400 transition hover:text-red-400"
+                  className="text-sm font-medium text-muted-content transition hover:text-red-400"
                 >
                   Clear all
                 </button>
@@ -137,7 +137,7 @@ export default function CartPage() {
               {cart.map((item) => (
                 <Card
                   key={item._id}
-                  className="flex items-center gap-4 rounded-2xl border-zinc-800/90 bg-zinc-900/60 p-4"
+                  className="flex items-center gap-4 rounded-2xl border-surface/90 bg-card-surface/60 p-4"
                 >
                   <img
                     src={item.image}
@@ -148,10 +148,10 @@ export default function CartPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <h3 className="truncate font-semibold text-white">
+                        <h3 className="truncate font-semibold text-content">
                           {item.name}
                         </h3>
-                        <p className="mt-0.5 text-xs text-zinc-400">
+                        <p className="mt-0.5 text-xs text-muted-content">
                           {item.vendor || "Pizzora Kitchen"}
                         </p>
                       </div>
@@ -166,20 +166,20 @@ export default function CartPage() {
                         <button
                           type="button"
                           onClick={() => updateQty(item._id, -1)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 transition hover:border-orange-500"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface bg-card-surface text-content transition hover:border-orange-500"
                           aria-label="Decrease quantity"
                         >
                           <Minus className="h-3.5 w-3.5" />
                         </button>
 
-                        <span className="min-w-6 text-center text-sm font-bold text-white">
+                        <span className="min-w-6 text-center text-sm font-bold text-content">
                           {item.qty}
                         </span>
 
                         <button
                           type="button"
                           onClick={() => updateQty(item._id, 1)}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 transition hover:border-orange-500"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface bg-card-surface text-content transition hover:border-orange-500"
                           aria-label="Increase quantity"
                         >
                           <Plus className="h-3.5 w-3.5" />
@@ -192,7 +192,7 @@ export default function CartPage() {
                           removeFromCart(item._id);
                           toast.success(`${item.name} removed`);
                         }}
-                        className="rounded-lg p-2 text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400"
+                        className="rounded-lg p-2 text-muted-content transition hover:bg-red-500/10 hover:text-red-400"
                         aria-label={`Remove ${item.name}`}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -205,34 +205,34 @@ export default function CartPage() {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <Card className="sticky top-24 rounded-2xl border-zinc-800/90 bg-zinc-900/60">
+              <Card className="sticky top-24 rounded-2xl border-surface/90 bg-card-surface/60">
                 <CardHeader>
-                  <CardTitle className="text-lg font-bold text-white">
+                  <CardTitle className="text-lg font-bold text-content">
                     Order Summary
                   </CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-400">Subtotal</span>
-                    <span className="font-semibold text-white">
+                    <span className="text-muted-content">Subtotal</span>
+                    <span className="font-semibold text-content">
                       ৳{subtotal}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-1.5 text-zinc-400">
+                    <span className="flex items-center gap-1.5 text-muted-content">
                       <Truck className="h-3.5 w-3.5 text-orange-400" />
                       Delivery Fee
                     </span>
-                    <span className="font-semibold text-white">
+                    <span className="font-semibold text-content">
                       ৳{deliveryFee}
                     </span>
                   </div>
 
-                  <div className="border-t border-zinc-800 pt-4">
+                  <div className="border-t border-surface pt-4">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-white">Total</span>
+                      <span className="font-bold text-content">Total</span>
                       <span className="text-xl font-extrabold text-orange-400">
                         ৳{total}
                       </span>

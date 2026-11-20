@@ -59,8 +59,8 @@ export default function VendorSidebar() {
     const pathname = usePathname();
 
     return (
-        <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-zinc-200 bg-white text-zinc-900 dark:border-zinc-800 dark:bg-[#09090b] dark:text-white">
-            <div className="flex h-20 items-center justify-between border-b border-zinc-200 px-6 dark:border-zinc-800">
+        <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-zinc-200 bg-white text-content dark:border-surface dark:bg-surface dark:text-content">
+            <div className="flex h-20 items-center justify-between border-b border-zinc-200 px-6 dark:border-surface">
                 <Link href="/" className="flex items-center">
                     <Image
                         src={BrightLogo}
@@ -77,7 +77,7 @@ export default function VendorSidebar() {
             </div>
 
             <div className="px-5 py-6">
-                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-content">
                     Vendor Panel
                 </p>
 
@@ -93,7 +93,7 @@ export default function VendorSidebar() {
                                 href={item.href}
                                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${active
                                         ? "bg-[#FEC447] text-black"
-                                        : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white"
+                                        : "text-muted-content hover:bg-zinc-100 hover:text-content dark:text-muted-content dark:hover:bg-card-surface dark:hover:text-content"
                                     }`}
                             >
                                 <Icon size={19} />
@@ -104,10 +104,10 @@ export default function VendorSidebar() {
                 </nav>
             </div>
 
-            <div className="mt-auto border-t border-zinc-200 p-5 dark:border-zinc-800">
+            <div className="mt-auto border-t border-zinc-200 p-5 dark:border-surface">
                 <Link
                     href="/"
-                    className="flex items-center gap-3 text-sm text-zinc-400 transition hover:text-[#FEC447]"
+                    className="flex items-center gap-3 text-sm text-muted-content transition hover:text-[#FEC447]"
                 >
                     <ChevronLeft size={18} />
                     Back to Homepage

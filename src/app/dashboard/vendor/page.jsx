@@ -91,7 +91,7 @@ export default function VendorDashboard() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Vendor Dashboard</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="mt-2 text-sm text-muted-content">
             Manage your pizzas, orders and business.
           </p>
         </div>
@@ -112,10 +112,10 @@ export default function VendorDashboard() {
           return (
             <div
               key={stat.title}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6"
+              className="rounded-2xl border border-surface bg-card-surface/60 p-6"
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm text-zinc-400">{stat.title}</p>
+                <p className="text-sm text-muted-content">{stat.title}</p>
                 <div className="rounded-xl bg-[#FEC447]/10 p-3 text-[#FEC447]">
                   <Icon size={22} />
                 </div>
@@ -127,9 +127,9 @@ export default function VendorDashboard() {
         })}
       </div>
 
-      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8">
+      <div className="mt-8 rounded-2xl border border-surface bg-card-surface/60 p-8">
         <h2 className="text-xl font-bold">Welcome to Pizzora!</h2>
-        <p className="mt-3 text-sm leading-7 text-zinc-400">
+        <p className="mt-3 text-sm leading-7 text-muted-content">
           Start managing your pizza business. Add your delicious pizzas and
           submit them for admin approval.
         </p>

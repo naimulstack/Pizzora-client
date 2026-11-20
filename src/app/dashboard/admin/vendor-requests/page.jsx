@@ -78,7 +78,7 @@ export default function AdminVendorRequestsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#09090b] p-6 text-white md:p-8">
+    <main className="min-h-screen bg-surface p-6 text-content md:p-8">
       <div className="mx-auto max-w-6xl space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -88,7 +88,7 @@ export default function AdminVendorRequestsPage() {
             <h1 className="mt-1 text-3xl font-bold tracking-tight">
               Vendor Applications
             </h1>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-muted-content">
               Review customer requests and promote approved applicants to vendor.
             </p>
           </div>
@@ -96,7 +96,7 @@ export default function AdminVendorRequestsPage() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm text-white outline-none focus:border-orange-500"
+            className="rounded-xl border border-surface bg-card-surface px-4 py-2.5 text-sm text-content outline-none focus:border-orange-500"
           >
             <option value="All">All Requests</option>
             <option value="Pending">Pending</option>
@@ -106,11 +106,11 @@ export default function AdminVendorRequestsPage() {
         </div>
 
         {loading ? (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-10 text-center text-sm text-zinc-400">
+          <div className="rounded-2xl border border-surface bg-card-surface/50 p-10 text-center text-sm text-muted-content">
             Loading vendor requests...
           </div>
         ) : filteredRequests.length === 0 ? (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-12 text-center text-sm text-zinc-500">
+          <div className="rounded-2xl border border-surface bg-card-surface/50 p-12 text-center text-sm text-muted-content">
             No vendor requests found.
           </div>
         ) : (
@@ -118,7 +118,7 @@ export default function AdminVendorRequestsPage() {
             {filteredRequests.map((item) => (
               <div
                 key={item._id}
-                className="flex flex-col justify-between gap-5 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 lg:flex-row lg:items-center"
+                className="flex flex-col justify-between gap-5 rounded-2xl border border-surface bg-card-surface/50 p-6 lg:flex-row lg:items-center"
               >
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
@@ -126,10 +126,10 @@ export default function AdminVendorRequestsPage() {
                       <Store size={20} />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-white">
+                      <h2 className="text-lg font-bold text-content">
                         {item.shopName}
                       </h2>
-                      <p className="text-xs text-zinc-400">
+                      <p className="text-xs text-muted-content">
                         Applicant: {item.userName || "Customer"}
                       </p>
                     </div>
@@ -142,7 +142,7 @@ export default function AdminVendorRequestsPage() {
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap gap-4 pt-1 text-xs text-zinc-400">
+                  <div className="flex flex-wrap gap-4 pt-1 text-xs text-muted-content">
                     <span className="inline-flex items-center gap-1">
                       <Mail size={13} className="text-orange-400" />
                       {item.userEmail}
@@ -160,7 +160,7 @@ export default function AdminVendorRequestsPage() {
                       </span>
                     )}
                     <span className="inline-flex items-center gap-1">
-                      <Clock size={13} className="text-zinc-500" />
+                      <Clock size={13} className="text-muted-content" />
                       {item.createdAt
                         ? new Date(item.createdAt).toLocaleDateString()
                         : "Recently"}
@@ -168,7 +168,7 @@ export default function AdminVendorRequestsPage() {
                   </div>
 
                   {item.note && (
-                    <p className="pt-1 text-sm text-zinc-300">{item.note}</p>
+                    <p className="pt-1 text-sm text-content">{item.note}</p>
                   )}
                 </div>
 

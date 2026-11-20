@@ -75,8 +75,8 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#09090b] px-4 py-10 text-white sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-10">
+    <main className="min-h-screen bg-surface px-4 py-10 text-content sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-10">
         {/* Header */}
         <div className="max-w-2xl space-y-3">
           <Badge
@@ -85,10 +85,10 @@ export default function ContactPage() {
           >
             Pizzora / Contact Us
           </Badge>
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-content sm:text-4xl">
             Get in Touch With Us
           </h1>
-          <p className="text-sm text-zinc-400 sm:text-base">
+          <p className="text-sm text-muted-content sm:text-base">
             Have a question about an order, partnering as a vendor, or feedback
             on our pizzas? Send us a message below.
           </p>
@@ -97,12 +97,12 @@ export default function ContactPage() {
         {/* Grid */}
         <div className="grid gap-8 lg:grid-cols-12">
           {/* Form Card */}
-          <Card className="rounded-2xl border-zinc-800 bg-zinc-900/50 text-white lg:col-span-7">
+          <Card className="rounded-2xl border-surface bg-card-surface/50 text-content lg:col-span-7">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">
+              <CardTitle className="text-xl font-bold text-content">
                 Send a Message
               </CardTitle>
-              <CardDescription className="text-zinc-400">
+              <CardDescription className="text-muted-content">
                 Fill out the form and our team will get back to you shortly.
               </CardDescription>
             </CardHeader>
@@ -122,7 +122,7 @@ export default function ContactPage() {
                   <div className="space-y-2">
                     <label
                       htmlFor="name"
-                      className="text-sm font-medium text-zinc-300"
+                      className="text-sm font-medium text-content"
                     >
                       Your Name
                     </label>
@@ -133,14 +133,14 @@ export default function ContactPage() {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Enter your name"
-                      className="h-11 rounded-xl border-zinc-800 bg-[#09090b] text-white placeholder:text-zinc-500 focus-visible:ring-orange-500"
+                      className="h-11 rounded-xl border-surface bg-surface text-content placeholder:text-muted-content focus-visible:ring-orange-500"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label
                       htmlFor="email"
-                      className="text-sm font-medium text-zinc-300"
+                      className="text-sm font-medium text-content"
                     >
                       Email Address
                     </label>
@@ -152,7 +152,7 @@ export default function ContactPage() {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="you@example.com"
-                      className="h-11 rounded-xl border-zinc-800 bg-[#09090b] text-white placeholder:text-zinc-500 focus-visible:ring-orange-500"
+                      className="h-11 rounded-xl border-surface bg-surface text-content placeholder:text-muted-content focus-visible:ring-orange-500"
                     />
                   </div>
                 </div>
@@ -160,7 +160,7 @@ export default function ContactPage() {
                 <div className="space-y-2">
                   <label
                     htmlFor="topic"
-                    className="text-sm font-medium text-zinc-300"
+                    className="text-sm font-medium text-content"
                   >
                     Topic
                   </label>
@@ -169,7 +169,7 @@ export default function ContactPage() {
                     name="topic"
                     value={formData.topic}
                     onChange={handleChange}
-                    className="h-11 w-full rounded-xl border border-zinc-800 bg-[#09090b] px-3.5 text-sm text-white outline-none transition focus:border-orange-500"
+                    className="h-11 w-full rounded-xl border border-surface bg-surface px-3.5 text-sm text-content outline-none transition focus:border-orange-500"
                   >
                     <option value="Order Support">Order Support</option>
                     <option value="Vendor Partnership">Vendor Partnership</option>
@@ -180,7 +180,7 @@ export default function ContactPage() {
                 <div className="space-y-2">
                   <label
                     htmlFor="message"
-                    className="text-sm font-medium text-zinc-300"
+                    className="text-sm font-medium text-content"
                   >
                     Message
                   </label>
@@ -192,7 +192,7 @@ export default function ContactPage() {
                     value={formData.message}
                     onChange={handleChange}
                     placeholder="Write your message here..."
-                    className="rounded-xl border-zinc-800 bg-[#09090b] text-white placeholder:text-zinc-500 focus-visible:ring-orange-500"
+                    className="rounded-xl border-surface bg-surface text-content placeholder:text-muted-content focus-visible:ring-orange-500"
                   />
                 </div>
 
@@ -215,20 +215,20 @@ export default function ContactPage() {
               return (
                 <Card
                   key={item.title}
-                  className="rounded-2xl border-zinc-800 bg-zinc-900/50 text-white transition hover:border-zinc-700"
+                  className="rounded-2xl border-surface bg-card-surface/50 text-content transition hover:border-surface"
                 >
                   <CardContent className="flex items-start gap-4 p-5">
                     <div className="rounded-xl bg-orange-500/10 p-3 text-orange-400">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-medium text-zinc-400">
+                      <p className="text-xs font-medium text-muted-content">
                         {item.title}
                       </p>
-                      <p className="text-sm font-semibold text-white">
+                      <p className="text-sm font-semibold text-content">
                         {item.value}
                       </p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-muted-content">
                         {item.description}
                       </p>
                     </div>
