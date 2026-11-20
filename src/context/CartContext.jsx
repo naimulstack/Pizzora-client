@@ -22,7 +22,6 @@ export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [hydrated, setHydrated] = useState(false);
 
-  // User বদলালে সেই user-এর নিজের কার্ট লোড করা
   useEffect(() => {
     const loadCart = async () => {
       setHydrated(false);
@@ -47,7 +46,6 @@ export function CartProvider({ children }) {
     loadCart();
   }, [userId]);
 
-  // কার্ট বদলালে সঠিক user-এর key-এ সেভ
   useEffect(() => {
     if (!hydrated) return;
 
