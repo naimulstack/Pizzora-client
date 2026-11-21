@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   Users,
   ShoppingBag,
@@ -13,7 +12,6 @@ import {
   CheckCircle2,
   Truck,
   XCircle,
-  Bell,
 } from "lucide-react";
 
 const API_URL = (
@@ -52,8 +50,6 @@ const AdminDashboard = () => {
         setLoading(false);
       });
   }, []);
-
-  const unreadCount = Number(data?.unreadNotifications || 0);
 
   const stats = [
     {
@@ -141,23 +137,8 @@ const AdminDashboard = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard/admin/notifications"
-              aria-label="Notifications"
-              className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-surface bg-card-surface text-content transition hover:border-orange-500/50 hover:text-orange-400"
-            >
-              <Bell size={19} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[11px] font-bold text-black shadow">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </Link>
-
-            <div className="rounded-xl border border-surface bg-card-surface px-4 py-2.5 text-sm text-muted-content">
-              Admin Panel
-            </div>
+          <div className="rounded-xl border border-surface bg-card-surface px-4 py-2.5 text-sm text-muted-content">
+            Admin Panel
           </div>
         </div>
 

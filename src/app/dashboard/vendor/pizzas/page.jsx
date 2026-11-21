@@ -40,6 +40,54 @@ const extractPizzas = (raw) => {
   return [];
 };
 
+const isOwnedByCurrentVendor = (item, user) => {
+  if (!item || !user) return false;
+
+  const currentEmail = String(user.email || "")
+    .trim()
+    .toLowerCase();
+  const currentUserId = String(user.id || user._id || "").trim();
+  const currentName = String(user.name || "")
+    .trim()
+    .toLowerCase();
+
+  const itemEmail = String(
+    item?.vendorEmail ||
+      item?.email ||
+      item?.sellerEmail ||
+      item?.createdBy ||
+      item?.ownerEmail ||
+      ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const itemUserId = String(
+    item?.vendorId || item?.userId || item?.ownerId || ""
+  ).trim();
+
+  const itemVendorName = String(
+    item?.vendor || item?.vendorName || item?.ownerName || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  if (currentEmail && itemEmail && currentEmail === itemEmail) {
+    return true;
+  }
+
+  if (currentUserId && itemUserId && currentUserId === itemUserId) {
+    return true;
+  }
+
+  // ইমেইল বা ID না থাকলে শেষ ভরসা হিসেবে vendor/owner নাম মিলিয়ে দেখা
+  if (!itemEmail && !itemUserId && currentName && itemVendorName) {
+    return currentName === itemVendorName;
+  }
+
+  return false;
+};
+
 export default function MyPizzasPage() {
   const [pizzas, setPizzas] = useState([]);
   const [search, setSearch] = useState("");
@@ -54,6 +102,7 @@ export default function MyPizzasPage() {
 
     const fetchMyPizzas = async () => {
       setLoading(true);
+      setLoadError("");
 
       const [sessionData, tokenData] = await Promise.all([
         authClient.getSession?.().catch(() => null),
@@ -68,13 +117,25 @@ export default function MyPizzasPage() {
         headers.Authorization = `Bearer ${token}`;
       }
 
+      if (!user?.email && !user?.id) {
+        if (active) {
+          setPizzas([]);
+          setLoadError("Please sign in as a vendor to view your pizzas.");
+          setLoading(false);
+        }
+        return;
+      }
+
       const params = new URLSearchParams();
       if (user?.email) params.set("email", user.email.trim().toLowerCase());
+      if (user?.id) params.set("userId", String(user.id).trim());
       if (user?.name) params.set("vendor", user.name.trim());
       const query = params.toString() ? `?${params.toString()}` : "";
 
       let list = [];
+      let anyRequestSucceeded = false;
 
+      // ১. কুয়েরি প্যারামিটারসহ /vendor/pizzas কল করা
       const res = await fetch(`${API_URL}/vendor/pizzas${query}`, {
         cache: "no-store",
         credentials: "include",
@@ -82,10 +143,14 @@ export default function MyPizzasPage() {
       }).catch(() => null);
 
       if (res?.ok) {
+        anyRequestSucceeded = true;
         const raw = await res.json().catch(() => []);
-        list = extractPizzas(raw);
+        list = extractPizzas(raw).filter((item) =>
+          isOwnedByCurrentVendor(item, user)
+        );
       }
 
+      // ২. কুয়েরি দিয়ে না পাওয়া গেলে সব ভেন্ডর পিজ্জা এনে strictly নিজের ইমেইল/ID দিয়ে ফিল্টার করা
       if (list.length === 0) {
         const allVendorRes = await fetch(`${API_URL}/vendor/pizzas`, {
           cache: "no-store",
@@ -94,41 +159,15 @@ export default function MyPizzasPage() {
         }).catch(() => null);
 
         if (allVendorRes?.ok) {
+          anyRequestSucceeded = true;
           const allVendorRaw = await allVendorRes.json().catch(() => []);
-          const allVendorList = extractPizzas(allVendorRaw);
-
-          if (user?.email) {
-            const emailLower = user.email.trim().toLowerCase();
-            const matchedByEmail = allVendorList.filter((item) => {
-              const itemEmail = String(
-                item?.vendorEmail ||
-                  item?.email ||
-                  item?.createdBy ||
-                  item?.ownerEmail ||
-                  ""
-              )
-                .trim()
-                .toLowerCase();
-              return itemEmail === emailLower;
-            });
-            list = matchedByEmail.length > 0 ? matchedByEmail : allVendorList;
-          } else {
-            list = allVendorList;
-          }
+          list = extractPizzas(allVendorRaw).filter((item) =>
+            isOwnedByCurrentVendor(item, user)
+          );
         }
       }
 
-      const allFailed =
-        !res?.ok && !list.length;
-
-      if (allFailed) {
-        setLoadError(
-          "Could not load your pizzas. The vendor pizzas endpoint is unavailable."
-        );
-      } else {
-        setLoadError("");
-      }
-
+      // ৩. তবুও না পাওয়া গেলে /pizzas থেকেও strictly নিজের ইমেইল/ID দিয়ে ফিল্টার করা
       if (list.length === 0) {
         const publicRes = await fetch(`${API_URL}/pizzas`, {
           cache: "no-store",
@@ -137,29 +176,20 @@ export default function MyPizzasPage() {
         }).catch(() => null);
 
         if (publicRes?.ok) {
+          anyRequestSucceeded = true;
           const publicRaw = await publicRes.json().catch(() => []);
-          const publicList = extractPizzas(publicRaw);
-          if (user?.email) {
-            const emailLower = user.email.trim().toLowerCase();
-            list = publicList.filter((item) => {
-              const itemEmail = String(
-                item?.vendorEmail ||
-                  item?.email ||
-                  item?.createdBy ||
-                  item?.ownerEmail ||
-                  ""
-              )
-                .trim()
-                .toLowerCase();
-              return itemEmail === emailLower;
-            });
-          } else {
-            list = publicList;
-          }
+          list = extractPizzas(publicRaw).filter((item) =>
+            isOwnedByCurrentVendor(item, user)
+          );
         }
       }
 
       if (active) {
+        if (!anyRequestSucceeded) {
+          setLoadError(
+            "Could not load your pizzas. Please check your connection or try again."
+          );
+        }
         setPizzas(list);
         setLoading(false);
       }

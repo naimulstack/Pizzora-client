@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import {
   ArrowLeft,
@@ -22,11 +22,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
+import { authClient } from "@/lib/auth-client";
 
 const DELIVERY_FEE = 60;
+const PENDING_ORDER_KEY = "pizzora_pending_stripe_order";
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(
+  /\/$/,
+  ""
+);
 
 export default function CartPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session } = authClient.useSession();
+  const userEmail = session?.user?.email || "";
+
   const {
     cart,
     updateQty,
@@ -42,9 +52,59 @@ export default function CartPage() {
   const [paymentMethod, setPaymentMethod] = useState("online");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const handledStripeRef = useRef(false);
 
   const deliveryFee = cart.length > 0 ? DELIVERY_FEE : 0;
   const total = subtotal + deliveryFee;
+
+  // Stripe payment সফল হয়ে ফিরে এলে sessionId সহ backend-এ অর্ডার সেভ করবে
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    const sessionId = searchParams.get("session_id");
+
+    if (payment === "cancelled") {
+      toast.error("Stripe payment was cancelled.");
+      router.replace("/cart");
+      return;
+    }
+
+    if (payment !== "success" || !sessionId || handledStripeRef.current) return;
+    handledStripeRef.current = true;
+
+    const finalizeStripeOrder = async () => {
+      try {
+        const raw = sessionStorage.getItem(PENDING_ORDER_KEY);
+        if (!raw) return;
+
+        const pendingOrder = JSON.parse(raw);
+
+        const res = await fetch(`${API_URL}/orders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...pendingOrder,
+            paymentMethod: "stripe",
+            paymentStatus: "paid",
+            sessionId,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data?.success) {
+          throw new Error(data?.message || "Failed to save paid order.");
+        }
+
+        sessionStorage.removeItem(PENDING_ORDER_KEY);
+        clearCart();
+        toast.success(`Payment successful! Order ${data.order?.orderId || ""} placed.`);
+        router.replace("/menu");
+      } catch (err) {
+        toast.error(err.message || "Could not save Stripe order.");
+      }
+    };
+
+    finalizeStripeOrder();
+  }, [searchParams, clearCart, router]);
 
   const handleConfirmOrder = async (e) => {
     e.preventDefault();
@@ -56,46 +116,66 @@ export default function CartPage() {
 
     setCheckingOut(true);
 
-    if (paymentMethod === "online") {
-      try {
+    const orderPayload = {
+      customerEmail: userEmail,
+      customerName: session?.user?.name || "Customer",
+      phone: phone.trim(),
+      address: address.trim(),
+      items: cart,
+      subtotal,
+      deliveryFee,
+      total,
+    };
+
+    try {
+      if (paymentMethod === "online") {
+        sessionStorage.setItem(PENDING_ORDER_KEY, JSON.stringify(orderPayload));
+
         const res = await fetch("/api/checkout_sessions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            items: cart,
-            subtotal,
-            deliveryFee,
-            total,
-            phone: phone.trim(),
-            address: address.trim(),
+            ...orderPayload,
+            userEmail,
           }),
         });
 
-        const data = await res.json().catch(() => null);
-
-        if (res.ok && data?.url) {
-          window.location.href = data.url;
-          return;
+        const data = await res.json();
+        if (!res.ok || !data?.url) {
+          throw new Error(data?.message || "Failed to start Stripe checkout.");
         }
 
-        toast.error(
-          data?.message || "Stripe checkout route (/api/checkout_sessions) is not ready yet."
-        );
-      } catch {
-        toast.error("Could not connect to Stripe checkout endpoint.");
-      } finally {
-        setCheckingOut(false);
+        window.location.href = data.url;
+        return;
       }
-      return;
-    }
 
-    toast.success(`Cash on Delivery order confirmed! ${totalItems} item(s) — ৳${total}`);
-    clearCart();
-    setCheckingOut(false);
-    setCheckoutOpen(false);
-    setPhone("");
-    setAddress("");
-    router.push("/menu");
+      // Cash on Delivery -> সরাসরি backend /orders এ পাঠাবে
+      const res = await fetch(`${API_URL}/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...orderPayload,
+          paymentMethod: "cod",
+          paymentStatus: "unpaid",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || "Failed to place COD order.");
+      }
+
+      toast.success(`COD Order placed (${data.order?.orderId || ""}) — ৳${total}`);
+      clearCart();
+      setCheckoutOpen(false);
+      setPhone("");
+      setAddress("");
+      router.push("/menu");
+    } catch (error) {
+      toast.error(error.message || "Something went wrong.");
+    } finally {
+      setCheckingOut(false);
+    }
   };
 
   return (
@@ -241,21 +321,21 @@ export default function CartPage() {
 
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-content">Subtotal</span>
+                    <span className="text-muted-content">Order Price (Subtotal)</span>
                     <span className="font-semibold">৳{subtotal}</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="flex items-center gap-1.5 text-muted-content">
                       <Truck className="h-3.5 w-3.5 text-orange-400" />
-                      Delivery Fee
+                      Delivery Charge
                     </span>
                     <span className="font-semibold">৳{deliveryFee}</span>
                   </div>
 
                   <div className="border-t border-surface pt-4">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold">Total</span>
+                      <span className="font-bold">Total Price</span>
                       <span className="text-xl font-extrabold text-orange-400">
                         ৳{total}
                       </span>

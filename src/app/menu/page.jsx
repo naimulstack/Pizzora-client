@@ -1,12 +1,9 @@
-
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   Search,
-  ShoppingCart,
   Star,
   Store,
   MapPin,
@@ -25,55 +22,128 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
-import { useSession } from "@/lib/auth-client";
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 ).replace(/\/$/, "");
 
-const FALLBACK_PIZZAS = [
-  {
-    _id: "6afe0c0039c951c5197653f9",
-    name: "Creamy Mushroom",
-    category: "Vegetarian Pizzas",
-    price: 580,
-    image: "https://images.unsplash.com/photo-1571407970349-bc81e7e96d47",
-    description: "Creamy garlic sauce, fresh mushrooms, herbs and mozzarella.",
-    vendor: "Green Oven",
-    location: "Bashundhara, Dhaka",
-    status: "approved",
-    isActive: true,
-    rating: 4.5,
-    isPopular: false,
-  },
-];
+const FALLBACK_PIZZAS = [];
+
+const resolveVendorShopName = (pizza, approvedVendors = []) => {
+  const emailKey = String(
+    pizza.vendorEmail || pizza.sellerEmail || pizza.email || ""
+  )
+    .trim()
+    .toLowerCase();
+  const vendorIdKey = String(pizza.vendorId || pizza.userId || "").trim();
+  const vendorNameKey = String(pizza.vendor || "").trim().toLowerCase();
+
+  const matchedVendor = approvedVendors.find((vendor) => {
+    const vEmail = String(vendor.userEmail || vendor.email || "")
+      .trim()
+      .toLowerCase();
+    const vUserId = String(vendor.userId || vendor._id || "").trim();
+    const vName = String(vendor.ownerName || vendor.userName || "")
+      .trim()
+      .toLowerCase();
+    const vShop = String(vendor.shopName || "").trim().toLowerCase();
+
+    if (emailKey && vEmail && emailKey === vEmail) return true;
+    if (vendorIdKey && vUserId && vendorIdKey === vUserId) return true;
+    if (
+      vendorNameKey &&
+      ((vName && vendorNameKey === vName) || (vShop && vendorNameKey === vShop))
+    ) {
+      return true;
+    }
+    return false;
+  });
+
+  return (
+    matchedVendor?.shopName?.trim() ||
+    pizza.shopName?.trim() ||
+    pizza.vendor?.trim() ||
+    "Pizzora Kitchen"
+  );
+};
 
 const MenuPage = () => {
-  const router = useRouter();
-  const { addToCart, totalItems } = useCart();
-  const { data: session } = useSession();
-
-  const cartHref = session?.user ? "/cart" : "/sign-in";
+  const { addToCart } = useCart();
 
   const [pizzas, setPizzas] = useState([]);
+  const [approvedShopNames, setApprovedShopNames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
-    fetch(`${API_URL}/pizzas`, {
-      cache: "no-store",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const list = Array.isArray(data) && data.length > 0 ? data : FALLBACK_PIZZAS;
-        setPizzas(list.filter((item) => item.isActive !== false));
-        setLoading(false);
-      })
-      .catch(() => {
-        setPizzas(FALLBACK_PIZZAS);
-        setLoading(false);
-      });
+    let isMounted = true;
+
+    const loadMenuAndVendors = async () => {
+      try {
+        setLoading(true);
+        const [pizzasRes, vendorsRes] = await Promise.all([
+          fetch(`${API_URL}/pizzas`, { cache: "no-store" }),
+          fetch(`${API_URL}/vendors`, { cache: "no-store" }).catch(() => null),
+        ]);
+
+        const pizzasData = await pizzasRes.json();
+        const vendorsRaw =
+          vendorsRes && vendorsRes.ok ? await vendorsRes.json() : [];
+
+        const vendorsList = Array.isArray(vendorsRaw)
+          ? vendorsRaw
+          : Array.isArray(vendorsRaw?.data)
+            ? vendorsRaw.data
+            : [];
+
+        const approvedVendors = vendorsList.filter(
+          (vendor) => vendor.status === "approved"
+        );
+
+        const approvedShopNames = Array.from(
+          new Set(
+            approvedVendors
+              .map((vendor) => vendor.shopName?.trim())
+              .filter(Boolean)
+          )
+        );
+
+        const rawList =
+          Array.isArray(pizzasData) && pizzasData.length > 0
+            ? pizzasData
+            : Array.isArray(pizzasData?.data) && pizzasData.data.length > 0
+              ? pizzasData.data
+              : FALLBACK_PIZZAS;
+
+        const enrichedPizzas = rawList
+          .filter((item) => item.isActive !== false)
+          .map((pizza) => ({
+            ...pizza,
+            shopName: resolveVendorShopName(pizza, approvedVendors),
+          }));
+
+        if (isMounted) {
+          setApprovedShopNames(approvedShopNames);
+          setPizzas(enrichedPizzas);
+        }
+      } catch {
+        if (isMounted) {
+          setApprovedShopNames([]);
+          setPizzas(FALLBACK_PIZZAS);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadMenuAndVendors();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const categories = useMemo(() => {
@@ -88,6 +158,7 @@ const MenuPage = () => {
         !q ||
         pizza.name?.toLowerCase().includes(q) ||
         pizza.description?.toLowerCase().includes(q) ||
+        pizza.shopName?.toLowerCase().includes(q) ||
         pizza.vendor?.toLowerCase().includes(q) ||
         pizza.location?.toLowerCase().includes(q);
 
@@ -99,42 +170,16 @@ const MenuPage = () => {
   }, [pizzas, search, selectedCategory]);
 
   const handleAddToCart = (pizza) => {
-    addToCart(pizza);
+    addToCart({
+      ...pizza,
+      shopName: pizza.shopName,
+      vendorShopName: pizza.shopName,
+    });
     toast.success(`${pizza.name} added to cart!`);
   };
 
   return (
     <div className="min-h-screen bg-white text-zinc-900 dark:bg-[#09090b] dark:text-white">
-      {/* Top Navbar / Header */}
-      <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/85 backdrop-blur-md dark:border-zinc-800/80 dark:bg-[#09090b]/85">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 text-orange-400 ring-1 ring-orange-500/30">
-              <Pizza className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs font-medium tracking-wide text-orange-400 uppercase">
-                Pizzora Menu
-              </p>
-              <h1 className="text-lg font-bold tracking-tight text-zinc-900 sm:text-xl dark:text-white">
-                Fresh Oven Pizzas
-              </h1>
-            </div>
-
-            <Button
-              onClick={() => router.push(cartHref)}
-              className="relative flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 font-semibold text-black transition hover:bg-orange-400"
-            >
-              <ShoppingCart className="h-4 w-4" />
-              <span className="hidden sm:inline">Cart</span>
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-black/85 px-1.5 text-xs font-bold text-orange-400">
-                {totalItems}
-              </span>
-            </Button>
-          </div>
-        </div>
-      </header>
-
       {/* Hero & Filter Section */}
       <section className="mx-auto max-w-7xl px-4 pt-8 pb-6 sm:px-6 lg:px-8">
         <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-900/5 sm:p-8 dark:border-zinc-800 dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-900/90 dark:to-orange-950/20">
@@ -145,7 +190,7 @@ const MenuPage = () => {
                 className="border-orange-500/30 bg-orange-500/10 text-orange-400"
               >
                 <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                Handcrafted & Hot Delivered
+                Handcrafted &amp; Hot Delivered
               </Badge>
               <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
                 Crafted for True Pizza Lovers
@@ -211,7 +256,9 @@ const MenuPage = () => {
         ) : filteredPizzas.length === 0 ? (
           <div className="rounded-3xl border border-zinc-200 bg-white px-6 py-16 text-center dark:border-zinc-800 dark:bg-zinc-900/40">
             <Pizza className="mx-auto mb-3 h-10 w-10 text-zinc-400 dark:text-zinc-600" />
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">No pizzas found</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              No pizzas found
+            </h3>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
               Try clearing your search or selecting another category.
             </p>
@@ -271,13 +318,13 @@ const MenuPage = () => {
                         <span>
                           Vendor:{" "}
                           <strong className="font-medium text-zinc-700 dark:text-zinc-200">
-                            {pizza.vendor || "Pizzora Kitchen"}
+                            {pizza.shopName}
                           </strong>
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-3.5 w-3.5 text-orange-500 dark:text-orange-400" />
-                        <span>{pizza.location || "Dhaka"}</span>
+                        <span>{pizza.location}</span>
                       </div>
                     </div>
                   </CardContent>

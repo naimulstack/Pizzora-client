@@ -325,12 +325,12 @@ const PizzaRequestsPage = () => {
 
                                             <div className="sm:text-right">
                                                 <p className="text-xl font-bold text-orange-400">
-                                                    à§³{pizza.price}
+                                                    ৳{pizza.price}
                                                 </p>
 
                                                 {pizza.discountPrice && (
                                                     <p className="text-xs text-muted-content line-through">
-                                                        à§³{pizza.discountPrice}
+                                                        ৳{pizza.discountPrice}
                                                     </p>
                                                 )}
                                             </div>
