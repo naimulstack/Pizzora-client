@@ -1,5 +1,6 @@
 
 import { ArrowUpRight, Clock, Mail, MapPin, Phone } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -13,6 +14,8 @@ import {
     FaXTwitter,
 } from "react-icons/fa6";
 import { FaArrowUpRightFromSquare } from "react-icons/fa6";
+import DarkLogo from "../../app/Images/Pizzora Freshly Baked Logo.png";
+import BrightLogo from "../../app/Images/Pizzora_Pizz_Gold_Transparent.png";
 
 const quickLinks = [
     { name: "Home", href: "/" },
@@ -41,14 +44,15 @@ const Footer = () => {
 
                     {/* Brand */}
                     <div>
-                        <Link href="/" className="mb-5 inline-flex items-center gap-2">
-                            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#DF2525] text-[#FEC447]">
-                                <FaPizzaSlice size={21} />
-                            </span>
-
-                            <span className="font-serif text-2xl font-extrabold text-[#18120C] dark:text-white">
-                                Pizzora
-                            </span>
+                        <Link href="/" className="flex items-center">
+                            <Image
+                                src={isDark ? BrightLogo : DarkLogo}
+                                alt="Pizzora Logo"
+                                width={150}
+                                height={60}
+                                priority
+                                className="h-auto w-[130px] object-contain"
+                            />
                         </Link>
 
                         <p className="max-w-xs text-sm leading-7 text-zinc-500 dark:text-zinc-400">
@@ -71,7 +75,7 @@ const Footer = () => {
                                 aria-label="Instagram"
                                 className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFF8ED] text-zinc-800 transition hover:bg-[#FEC447] dark:bg-[#18181B] dark:text-white"
                             >
-                                <FaInstagram  size={17} />
+                                <FaInstagram size={17} />
                             </a>
 
                             <a
@@ -79,7 +83,7 @@ const Footer = () => {
                                 aria-label="Facebook"
                                 className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFF8ED] text-zinc-800 transition hover:bg-[#FEC447] dark:bg-[#18181B] dark:text-white"
                             >
-                                <FaFacebookF  size={17} />
+                                <FaFacebookF size={17} />
                             </a>
                         </div>
                     </div>

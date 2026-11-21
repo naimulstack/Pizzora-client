@@ -1,47 +1,60 @@
 import { NextResponse } from "next/server";
 
+const LOGIN_PATH = "/login";
+const UNAUTHORIZED_PATH = "/unauthorized";
+
+const redirectTo = (request, path, withCallback = false) => {
+  const url = new URL(path, request.url);
+  if (withCallback) {
+    url.searchParams.set("callbackUrl", request.nextUrl.pathname);
+  }
+  return NextResponse.redirect(url);
+};
+
 export async function proxy(request) {
   const { pathname } = request.nextUrl;
 
-  const isAdminRoute = pathname.startsWith("/dashboard/admin");
-  const isVendorRoute = pathname.startsWith("/dashboard/vendor");
-  const isDashboardRoute = pathname.startsWith("/dashboard");
-
-  if (!isDashboardRoute) {
+  if (!pathname.startsWith("/dashboard")) {
     return NextResponse.next();
   }
 
-  const cookieHeader = request.headers.get("cookie") || "";
-
-  const sessionRes = await fetch(
-    new URL("/api/auth/get-session", request.url),
-    {
-      headers: {
-        cookie: cookieHeader,
-      },
-      cache: "no-store",
-    }
-  ).catch(() => null);
-
-  if (!sessionRes || !sessionRes.ok) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  const cookie = request.headers.get("cookie");
+  if (!cookie) {
+    return redirectTo(request, LOGIN_PATH, true);
   }
 
-  const sessionData = await sessionRes.json().catch(() => null);
-  const user = sessionData?.user || sessionData?.data?.user || null;
+  const res = await fetch(new URL("/api/auth/get-session", request.url), {
+    headers: { cookie },
+    cache: "no-store",
+  }).catch(() => null);
+
+  if (!res?.ok) {
+    return redirectTo(request, LOGIN_PATH, true);
+  }
+
+  const data = await res.json().catch(() => null);
+  const user = data?.user || data?.data?.user;
 
   if (!user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return redirectTo(request, LOGIN_PATH, true);
   }
 
-  const role = String(user.role || "customer").toLowerCase();
+  const role = String(user.role || "customer").trim().toLowerCase();
 
-  if (isAdminRoute && role !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
+    return redirectTo(request, UNAUTHORIZED_PATH);
   }
 
-  if (isVendorRoute && role !== "vendor") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (pathname.startsWith("/dashboard/vendor") && role !== "vendor") {
+    return redirectTo(request, UNAUTHORIZED_PATH);
+  }
+
+  const isCustomerSubRoute =
+    pathname.startsWith("/dashboard/customer") ||
+    pathname.startsWith("/dashboard/profile");
+
+  if (isCustomerSubRoute && role !== "customer") {
+    return redirectTo(request, UNAUTHORIZED_PATH);
   }
 
   return NextResponse.next();
