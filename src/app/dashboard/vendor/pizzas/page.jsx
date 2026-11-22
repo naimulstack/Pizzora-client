@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { authFetch } from "@/lib/api";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
@@ -80,7 +81,7 @@ const isOwnedByCurrentVendor = (item, user) => {
     return true;
   }
 
-  // ইমেইল বা ID না থাকলে শেষ ভরসা হিসেবে vendor/owner নাম মিলিয়ে দেখা
+  // à¦‡à¦®à§‡à¦‡à¦² à¦¬à¦¾ ID à¦¨à¦¾ à¦¥à¦¾à¦•à¦²à§‡ à¦¶à§‡à¦· à¦­à¦°à¦¸à¦¾ à¦¹à¦¿à¦¸à§‡à¦¬à§‡ vendor/owner à¦¨à¦¾à¦® à¦®à¦¿à¦²à¦¿à§Ÿà§‡ à¦¦à§‡à¦–à¦¾
   if (!itemEmail && !itemUserId && currentName && itemVendorName) {
     return currentName === itemVendorName;
   }
@@ -135,8 +136,8 @@ export default function MyPizzasPage() {
       let list = [];
       let anyRequestSucceeded = false;
 
-      // ১. কুয়েরি প্যারামিটারসহ /vendor/pizzas কল করা
-      const res = await fetch(`${API_URL}/vendor/pizzas${query}`, {
+      // à§§. à¦•à§à§Ÿà§‡à¦°à¦¿ à¦ªà§à¦¯à¦¾à¦°à¦¾à¦®à¦¿à¦Ÿà¦¾à¦°à¦¸à¦¹ /vendor/pizzas à¦•à¦² à¦•à¦°à¦¾
+      const res = await authFetch(`/vendor/pizzas${query}`, {
         cache: "no-store",
         credentials: "include",
         headers,
@@ -150,9 +151,9 @@ export default function MyPizzasPage() {
         );
       }
 
-      // ২. কুয়েরি দিয়ে না পাওয়া গেলে সব ভেন্ডর পিজ্জা এনে strictly নিজের ইমেইল/ID দিয়ে ফিল্টার করা
+      // à§¨. à¦•à§à§Ÿà§‡à¦°à¦¿ à¦¦à¦¿à§Ÿà§‡ à¦¨à¦¾ à¦ªà¦¾à¦“à§Ÿà¦¾ à¦—à§‡à¦²à§‡ à¦¸à¦¬ à¦­à§‡à¦¨à§à¦¡à¦° à¦ªà¦¿à¦œà§à¦œà¦¾ à¦à¦¨à§‡ strictly à¦¨à¦¿à¦œà§‡à¦° à¦‡à¦®à§‡à¦‡à¦²/ID à¦¦à¦¿à§Ÿà§‡ à¦«à¦¿à¦²à§à¦Ÿà¦¾à¦° à¦•à¦°à¦¾
       if (list.length === 0) {
-        const allVendorRes = await fetch(`${API_URL}/vendor/pizzas`, {
+        const allVendorRes = await authFetch(`/vendor/pizzas`, {
           cache: "no-store",
           credentials: "include",
           headers,
@@ -167,9 +168,9 @@ export default function MyPizzasPage() {
         }
       }
 
-      // ৩. তবুও না পাওয়া গেলে /pizzas থেকেও strictly নিজের ইমেইল/ID দিয়ে ফিল্টার করা
+      // à§©. à¦¤à¦¬à§à¦“ à¦¨à¦¾ à¦ªà¦¾à¦“à§Ÿà¦¾ à¦—à§‡à¦²à§‡ /pizzas à¦¥à§‡à¦•à§‡à¦“ strictly à¦¨à¦¿à¦œà§‡à¦° à¦‡à¦®à§‡à¦‡à¦²/ID à¦¦à¦¿à§Ÿà§‡ à¦«à¦¿à¦²à§à¦Ÿà¦¾à¦° à¦•à¦°à¦¾
       if (list.length === 0) {
-        const publicRes = await fetch(`${API_URL}/pizzas`, {
+        const publicRes = await authFetch(`/pizzas`, {
           cache: "no-store",
           credentials: "include",
           headers,
@@ -212,7 +213,7 @@ export default function MyPizzasPage() {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const res = await fetch(`${API_URL}/vendor/pizzas/${id}`, {
+    const res = await authFetch(`/vendor/pizzas/${id}`, {
       method: "DELETE",
       credentials: "include",
       headers,
@@ -359,7 +360,7 @@ export default function MyPizzasPage() {
                   <div className="min-w-0 flex-1">
                     <h3 className="font-bold">{pizza.name}</h3>
                     <p className="mt-1 text-sm text-muted-content">
-                      {pizza.category} · Added{" "}
+                      {pizza.category} Â· Added{" "}
                       {pizza.createdAt
                         ? new Date(pizza.createdAt).toLocaleDateString()
                         : "Recently"}

@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import { Menu, Bell, ShieldCheck } from "lucide-react";
 
@@ -15,7 +16,7 @@ const AdminHeader = ({ onMenuClick }) => {
   useEffect(() => {
     const loadCount = async () => {
       try {
-        const res = await fetch(`${API_URL}/admin/stats`, {
+        const res = await authFetch(`/admin/stats`, {
           credentials: "include",
           cache: "no-store",
         });

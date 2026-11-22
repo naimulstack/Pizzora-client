@@ -1,60 +1,35 @@
 import { NextResponse } from "next/server";
 
-const LOGIN_PATH = "/login";
-const UNAUTHORIZED_PATH = "/unauthorized";
-
-const redirectTo = (request, path, withCallback = false) => {
+const toUrl = (request, path, saveCallback = false) => {
   const url = new URL(path, request.url);
-  if (withCallback) {
-    url.searchParams.set("callbackUrl", request.nextUrl.pathname);
-  }
+  if (saveCallback) url.searchParams.set("callbackUrl", request.nextUrl.pathname);
   return NextResponse.redirect(url);
 };
 
 export async function proxy(request) {
   const { pathname } = request.nextUrl;
-
-  if (!pathname.startsWith("/dashboard")) {
-    return NextResponse.next();
-  }
-
   const cookie = request.headers.get("cookie");
-  if (!cookie) {
-    return redirectTo(request, LOGIN_PATH, true);
-  }
+
+  if (!cookie) return toUrl(request, "/sign-in", true);
 
   const res = await fetch(new URL("/api/auth/get-session", request.url), {
     headers: { cookie },
     cache: "no-store",
   }).catch(() => null);
 
-  if (!res?.ok) {
-    return redirectTo(request, LOGIN_PATH, true);
-  }
-
-  const data = await res.json().catch(() => null);
+  const data = res?.ok ? await res.json().catch(() => null) : null;
   const user = data?.user || data?.data?.user;
 
-  if (!user) {
-    return redirectTo(request, LOGIN_PATH, true);
-  }
+  if (!user) return toUrl(request, "/sign-in", true);
 
   const role = String(user.role || "customer").trim().toLowerCase();
 
   if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
-    return redirectTo(request, UNAUTHORIZED_PATH);
+    return toUrl(request, "/unauthorized");
   }
 
   if (pathname.startsWith("/dashboard/vendor") && role !== "vendor") {
-    return redirectTo(request, UNAUTHORIZED_PATH);
-  }
-
-  const isCustomerSubRoute =
-    pathname.startsWith("/dashboard/customer") ||
-    pathname.startsWith("/dashboard/profile");
-
-  if (isCustomerSubRoute && role !== "customer") {
-    return redirectTo(request, UNAUTHORIZED_PATH);
+    return toUrl(request, "/unauthorized");
   }
 
   return NextResponse.next();

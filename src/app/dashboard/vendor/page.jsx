@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import {
   Pizza,
@@ -45,7 +46,7 @@ export default function VendorDashboard() {
     try {
       let query = "";
 
-      const sessionRes = await fetch(`${API_URL}/api/auth/get-session`, {
+      const sessionRes = await authFetch(`/api/auth/get-session`, {
         credentials: "include",
         cache: "no-store",
       }).catch(() => null);
@@ -58,7 +59,7 @@ export default function VendorDashboard() {
           let matchedShopName = user.shopName || user.vendorName || "";
 
           if (user.email) {
-            const vendorsRes = await fetch(`${API_URL}/vendors`, {
+            const vendorsRes = await authFetch(`/vendors`, {
               credentials: "include",
               cache: "no-store",
             }).catch(() => null);
@@ -100,7 +101,7 @@ export default function VendorDashboard() {
         }
       }
 
-      const res = await fetch(`${API_URL}/vendor/stats${query}`, {
+      const res = await authFetch(`/vendor/stats${query}`, {
         credentials: "include",
         cache: "no-store",
       }).catch(() => null);

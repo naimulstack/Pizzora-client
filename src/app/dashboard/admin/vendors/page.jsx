@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import { Store, Search, Users, Eye } from "lucide-react";
 
 const API_URL = (
@@ -17,7 +18,7 @@ const VendorsPage = () => {
     const fetchVendors = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_URL}/admin/users?role=vendor`, {
+        const res = await authFetch(`/admin/users?role=vendor`, {
           credentials: "include",
           cache: "no-store",
         });
@@ -39,9 +40,9 @@ const VendorsPage = () => {
   const getStatus = (vendor) => (vendor.isBlocked ? "Suspended" : "Active");
 
   const formatDate = (date) => {
-    if (!date) return "—";
+    if (!date) return "â€”";
     const d = new Date(date);
-    if (isNaN(d.getTime())) return "—";
+    if (isNaN(d.getTime())) return "â€”";
     return d.toLocaleDateString("en-US", {
       month: "short",
       day: "2-digit",
@@ -192,7 +193,7 @@ const VendorsPage = () => {
                         {vendor.name || "Unnamed Vendor"}
                       </td>
                       <td className="px-5 py-5 text-muted-content">
-                        {vendor.email || "—"}
+                        {vendor.email || "â€”"}
                       </td>
                       <td className="px-5 py-5 text-muted-content">
                         {formatDate(vendor.createdAt)}

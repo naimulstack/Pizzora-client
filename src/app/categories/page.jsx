@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import {
   Pizza,
@@ -58,7 +59,7 @@ export default function CategoriesPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
-    fetch(`${API_URL}/pizzas`, {
+    authFetch(`/pizzas`, {
       cache: "no-store",
     })
       .then((res) => res.json())
@@ -267,7 +268,7 @@ export default function CategoriesPage() {
                       </span>
                     </div>
                     <CardDescription className="text-xs text-muted-content">
-                      {pizza.category} • {pizza.vendor || "Pizzora Kitchen"}
+                      {pizza.category} â€¢ {pizza.vendor || "Pizzora Kitchen"}
                     </CardDescription>
                   </CardHeader>
 

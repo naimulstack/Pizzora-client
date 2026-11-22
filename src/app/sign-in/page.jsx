@@ -32,8 +32,7 @@ const SignInPage = () => {
 
     const email = formData.get("email");
     const password = formData.get("password");
-    const rememberMe = formData.get("rememberMe") === "on";
-
+    const rememberMe = formData.get("rememberMe") ? formData.get("rememberMe") === "on" : true;
     try {
       const { error } = await authClient.signIn.email({
         email,
@@ -57,7 +56,7 @@ const SignInPage = () => {
         router.push("/");
       }
       router.refresh();
-      
+
 
     } catch (error) {
       toast.error(error.message || "Something went wrong.");
@@ -73,6 +72,7 @@ const SignInPage = () => {
       const { error } = await authClient.signIn.social({
         provider: "google",
         callbackURL: "/",
+        rememberMe: true
       });
 
       if (error) {

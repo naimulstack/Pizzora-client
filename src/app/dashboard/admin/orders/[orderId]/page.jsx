@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,18 +19,14 @@ import {
   PackageX,
   Receipt,
 } from "lucide-react";
-
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(
-  /\/$/,
-  ""
-);
+import { authFetch, getAuthToken } from "@/lib/api";
 
 export default function OrderDetailsPage() {
   const { orderId } = useParams();
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [updatingStatus, setUpdatingStatus] = useState(""); // "Accepted" | "Rejected" | ""
-  const [error, setError] = useState("");
+  const [updatingStatus, setUpdatingStatus] = useState("");
 
   useEffect(() => {
     if (!orderId) return;
@@ -37,21 +34,25 @@ export default function OrderDetailsPage() {
     const loadOrder = async () => {
       try {
         setLoading(true);
-        setError("");
 
-        const res = await fetch(
-          `${API_URL}/orders/${encodeURIComponent(orderId)}`,
+        const token = await getAuthToken();
+
+        console.log("JWT TOKEN EXISTS:", !!token);
+
+        if (!token) return;
+
+        const response = await authFetch(
+          `/orders/${encodeURIComponent(orderId)}`,
           { cache: "no-store" }
         );
-        const data = await res.json();
 
-        if (!res.ok) {
-          throw new Error(data?.message || "Order not found");
+        const data = await response.json();
+
+        if (response.ok) {
+          setOrder(data);
         }
-
-        setOrder(data);
-      } catch (err) {
-        setError(err.message || "Could not load order details.");
+      } catch (error) {
+        console.error("Order loading failed:", error);
       } finally {
         setLoading(false);
       }
@@ -61,30 +62,37 @@ export default function OrderDetailsPage() {
   }, [orderId]);
 
   const handleStatusChange = async (newStatus) => {
-    if (!order?._id && !orderId) return;
     const targetId = order?._id || orderId;
 
     try {
       setUpdatingStatus(newStatus);
-      const res = await fetch(
-        `${API_URL}/orders/${encodeURIComponent(targetId)}/status`,
+
+      const token = await getAuthToken();
+
+      console.log("JWT TOKEN EXISTS:", !!token);
+
+      if (!token) return;
+
+      const response = await authFetch(
+        `/orders/${encodeURIComponent(targetId)}/status`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({ status: newStatus }),
         }
       );
 
-      const data = await res.json();
-      if (!res.ok || data?.success === false) {
-        throw new Error(data?.message || `Failed to mark order as ${newStatus}`);
+      const data = await response.json();
+
+      if (!response.ok || data?.success === false) {
+        toast.error(data?.message || "Could not update order");
+        return;
       }
 
-      setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
+      setOrder((prev) => ({ ...prev, status: newStatus }));
       toast.success(`Order ${newStatus.toLowerCase()}!`);
-    } catch (err) {
-      toast.error(err.message || "Could not update order status");
+    } catch (error) {
+      console.error("Status update failed:", error);
+      toast.error("Could not update order");
     } finally {
       setUpdatingStatus("");
     }
@@ -92,9 +100,8 @@ export default function OrderDetailsPage() {
 
   const formatDate = (dateValue) => {
     if (!dateValue) return "N/A";
-    const date = new Date(dateValue);
-    if (Number.isNaN(date.getTime())) return "N/A";
-    return date.toLocaleString("en-GB", {
+
+    return new Date(dateValue).toLocaleString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -113,15 +120,15 @@ export default function OrderDetailsPage() {
             <Link
               href="/dashboard/admin/orders"
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 text-orange-400 ring-1 ring-orange-500/30 transition hover:bg-orange-500/25"
-              aria-label="Back to orders"
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>
+
             <div>
               <p className="text-xs font-medium tracking-wide text-orange-400 uppercase">
                 Order Details
               </p>
-              <h1 className="font-mono text-lg font-bold tracking-tight sm:text-xl">
+              <h1 className="font-mono text-lg font-bold sm:text-xl">
                 {order?.orderId || orderId}
               </h1>
             </div>
@@ -134,28 +141,28 @@ export default function OrderDetailsPage() {
                   type="button"
                   disabled={!!updatingStatus || currentStatus === "Accepted"}
                   onClick={() => handleStatusChange("Accepted")}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-bold text-black transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-bold text-black transition hover:bg-emerald-400 disabled:opacity-50"
                 >
                   {updatingStatus === "Accepted" ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <CheckCircle2 className="h-4 w-4" />
                   )}
-                  <span>{currentStatus === "Accepted" ? "Accepted" : "Accept Order"}</span>
+                  Accept Order
                 </button>
 
                 <button
                   type="button"
                   disabled={!!updatingStatus || currentStatus === "Rejected"}
                   onClick={() => handleStatusChange("Rejected")}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/15 px-4 py-2 text-xs font-bold text-red-400 ring-1 ring-red-500/40 transition hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/15 px-4 py-2 text-xs font-bold text-red-400 ring-1 ring-red-500/40 transition hover:bg-red-500 hover:text-white disabled:opacity-50"
                 >
                   {updatingStatus === "Rejected" ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <XCircle className="h-4 w-4" />
                   )}
-                  <span>{currentStatus === "Rejected" ? "Rejected" : "Reject Order"}</span>
+                  Reject Order
                 </button>
               </>
             )}
@@ -175,28 +182,25 @@ export default function OrderDetailsPage() {
           <div className="flex justify-center py-24">
             <Loader2 className="h-8 w-8 animate-spin text-orange-400" />
           </div>
-        ) : error || !order ? (
+        ) : !order ? (
           <div className="rounded-3xl border border-surface bg-card-surface/50 px-6 py-16 text-center">
             <PackageX className="mx-auto h-12 w-12 text-red-400" />
             <h2 className="mt-4 text-xl font-bold">Order Not Found</h2>
-            <p className="mt-1.5 text-sm text-muted-content">
-              {error || "We could not find any order matching this ID."}
-            </p>
             <Link
               href="/dashboard/admin/orders"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-black transition hover:bg-orange-400"
+              className="mt-6 inline-flex rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-black transition hover:bg-orange-400"
             >
               Back to Orders
             </Link>
           </div>
         ) : (
           <div className="grid gap-6 lg:grid-cols-3">
-            {/* Left Column: Status, Items & Delivery Info */}
             <div className="space-y-6 lg:col-span-2">
               <section className="rounded-2xl border border-surface bg-card-surface/60 p-6">
                 <div className="flex flex-wrap items-center justify-between gap-4 border-b border-surface pb-4">
                   <div>
                     <p className="text-xs text-muted-content">Order Status</p>
+
                     <div className="mt-1 flex items-center gap-2">
                       {currentStatus === "Rejected" ? (
                         <XCircle className="h-4 w-4 text-red-400" />
@@ -206,6 +210,7 @@ export default function OrderDetailsPage() {
                       ) : (
                         <Clock className="h-4 w-4 text-amber-400" />
                       )}
+
                       <span
                         className={`text-base font-bold ${
                           currentStatus === "Rejected"
@@ -233,7 +238,9 @@ export default function OrderDetailsPage() {
                     <Store className="h-4 w-4 shrink-0 text-orange-400" />
                     <span>
                       Assigned Kitchen:{" "}
-                      <strong className="text-orange-300">{order.vendor}</strong>
+                      <strong className="text-orange-300">
+                        {order.vendor}
+                      </strong>
                     </span>
                   </div>
                 )}
@@ -243,9 +250,9 @@ export default function OrderDetailsPage() {
                     Ordered Items ({(order.items || []).length})
                   </h2>
 
-                  {(order.items || []).map((item, idx) => (
+                  {(order.items || []).map((item, index) => (
                     <div
-                      key={item._id || idx}
+                      key={item._id || index}
                       className="flex items-center justify-between gap-4 rounded-xl border border-surface/80 bg-surface/60 p-3.5"
                     >
                       <div className="flex items-center gap-3.5">
@@ -256,6 +263,7 @@ export default function OrderDetailsPage() {
                             className="h-14 w-14 rounded-lg object-cover"
                           />
                         )}
+
                         <div>
                           <p className="text-sm font-semibold">{item.name}</p>
                           <p className="text-xs text-muted-content">
@@ -265,7 +273,9 @@ export default function OrderDetailsPage() {
                       </div>
 
                       <p className="text-sm font-bold text-orange-400">
-                        ৳{(Number(item.price) || 0) * (Number(item.qty) || 1)}
+                        ৳
+                        {(Number(item.price) || 0) *
+                          (Number(item.qty) || 1)}
                       </p>
                     </div>
                   ))}
@@ -287,7 +297,7 @@ export default function OrderDetailsPage() {
 
                   <div>
                     <p className="text-xs text-muted-content">Email</p>
-                    <p className="mt-0.5 font-medium break-all">
+                    <p className="mt-0.5 break-all font-medium">
                       {order.customerEmail || "N/A"}
                     </p>
                   </div>
@@ -301,17 +311,20 @@ export default function OrderDetailsPage() {
                   </div>
 
                   <div>
-                    <p className="text-xs text-muted-content">Delivery Address</p>
+                    <p className="text-xs text-muted-content">
+                      Delivery Address
+                    </p>
                     <p className="mt-0.5 flex items-start gap-1.5 text-muted-content">
                       <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-400" />
-                      <span className="text-content">{order.address || "N/A"}</span>
+                      <span className="text-content">
+                        {order.address || "N/A"}
+                      </span>
                     </p>
                   </div>
                 </div>
               </section>
             </div>
 
-            {/* Right Column: Payment & Price Breakdown */}
             <aside className="h-fit rounded-2xl border border-surface bg-card-surface/60 p-6">
               <div className="flex items-center gap-2 border-b border-surface pb-4">
                 <Receipt className="h-5 w-5 text-orange-400" />
@@ -361,15 +374,17 @@ export default function OrderDetailsPage() {
 
                 <div className="flex items-center justify-between">
                   <span className="text-muted-content">Payment Status</span>
-                  <span className="font-semibold uppercase text-emerald-400">
+                  <span className="font-semibold text-emerald-400 uppercase">
                     {order.paymentStatus || "unpaid"}
                   </span>
                 </div>
 
                 {order.sessionId && (
                   <div className="border-t border-surface pt-2">
-                    <p className="text-[11px] text-muted-content">Stripe Session ID</p>
-                    <p className="mt-0.5 font-mono text-[11px] break-all text-content">
+                    <p className="text-[11px] text-muted-content">
+                      Stripe Session ID
+                    </p>
+                    <p className="mt-0.5 break-all font-mono text-[11px] text-content">
                       {order.sessionId}
                     </p>
                   </div>

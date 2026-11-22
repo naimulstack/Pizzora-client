@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -62,7 +63,7 @@ export default function VendorOrdersPage() {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const res = await fetch(`${API_URL}/vendor/orders${query}`, {
+      const res = await authFetch(`/vendor/orders${query}`, {
         cache: "no-store",
         credentials: "include",
         headers,
@@ -75,7 +76,7 @@ export default function VendorOrdersPage() {
       }
 
       if (list.length === 0) {
-        const fallbackRes = await fetch(`${API_URL}/orders`, {
+        const fallbackRes = await authFetch(`/orders`, {
           cache: "no-store",
           credentials: "include",
           headers,
@@ -107,7 +108,7 @@ export default function VendorOrdersPage() {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
+    const res = await authFetch(`/orders/${orderId}/status`, {
       method: "PATCH",
       credentials: "include",
       headers,

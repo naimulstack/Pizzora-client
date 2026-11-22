@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { authFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -119,13 +120,13 @@ export default function CustomerProfilePage() {
         if (user.id) params.set("userId", String(user.id).trim());
         const query = `?${params.toString()}`;
 
-        let res = await fetch(`${API_URL}/customer/orders${query}`, {
+        let res = await authFetch(`/customer/orders${query}`, {
           credentials: "include",
           cache: "no-store",
         }).catch(() => null);
 
         if (!res?.ok) {
-          res = await fetch(`${API_URL}/orders${query}`, {
+          res = await authFetch(`/orders${query}`, {
             credentials: "include",
             cache: "no-store",
           }).catch(() => null);
@@ -338,7 +339,7 @@ export default function CustomerProfilePage() {
               <div className="mt-3 flex flex-col items-center gap-2 text-sm text-orange-50/90 sm:flex-row sm:flex-wrap sm:gap-5">
                 <span className="flex items-center gap-1.5">
                   <Mail className="h-4 w-4 text-black/80" />
-                  {user.email || "—"}
+                  {user.email || "â€”"}
                 </span>
 
                 {user.createdAt && (
@@ -476,11 +477,11 @@ export default function CustomerProfilePage() {
                             <span className="font-mono text-orange-400">
                               {shortId}
                             </span>
-                            <span>•</span>
+                            <span>â€¢</span>
                             <span>{dateLabel}</span>
                             {(order.address || order.deliveryAddress) && (
                               <>
-                                <span>•</span>
+                                <span>â€¢</span>
                                 <span className="inline-flex items-center gap-1">
                                   <MapPin className="h-3 w-3 text-orange-400" />
                                   {order.address || order.deliveryAddress}

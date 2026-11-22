@@ -19,6 +19,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { authFetch } from "@/lib/api";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/context/CartContext";
@@ -57,7 +58,7 @@ export default function CartPage() {
   const deliveryFee = cart.length > 0 ? DELIVERY_FEE : 0;
   const total = subtotal + deliveryFee;
 
-  // Stripe payment সফল হয়ে ফিরে এলে sessionId সহ backend-এ অর্ডার সেভ করবে
+  // Stripe payment à¦¸à¦«à¦² à¦¹à§Ÿà§‡ à¦«à¦¿à¦°à§‡ à¦à¦²à§‡ sessionId à¦¸à¦¹ backend-à¦ à¦…à¦°à§à¦¡à¦¾à¦° à¦¸à§‡à¦­ à¦•à¦°à¦¬à§‡
   useEffect(() => {
     const payment = searchParams.get("payment");
     const sessionId = searchParams.get("session_id");
@@ -78,7 +79,7 @@ export default function CartPage() {
 
         const pendingOrder = JSON.parse(raw);
 
-        const res = await fetch(`${API_URL}/orders`, {
+        const res = await authFetch(`/orders`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -149,8 +150,8 @@ export default function CartPage() {
         return;
       }
 
-      // Cash on Delivery -> সরাসরি backend /orders এ পাঠাবে
-      const res = await fetch(`${API_URL}/orders`, {
+      // Cash on Delivery -> à¦¸à¦°à¦¾à¦¸à¦°à¦¿ backend /orders à¦ à¦ªà¦¾à¦ à¦¾à¦¬à§‡
+      const res = await authFetch(`/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -165,7 +166,7 @@ export default function CartPage() {
         throw new Error(data?.message || "Failed to place COD order.");
       }
 
-      toast.success(`COD Order placed (${data.order?.orderId || ""}) — ৳${total}`);
+      toast.success(`COD Order placed (${data.order?.orderId || ""}) â€” ৳${total}`);
       clearCart();
       setCheckoutOpen(false);
       setPhone("");
@@ -371,7 +372,7 @@ export default function CartPage() {
               <div>
                 <h3 className="text-lg font-bold">Confirm Your Order</h3>
                 <p className="text-xs text-muted-content">
-                  {totalItems} item(s) · Total: ৳{total}
+                  {totalItems} item(s) Â· Total: ৳{total}
                 </p>
               </div>
               <button

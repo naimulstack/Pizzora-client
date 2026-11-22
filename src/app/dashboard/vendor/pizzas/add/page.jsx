@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -122,7 +123,7 @@ export default function AddPizzaPage() {
         isActive: true,
       };
 
-      const res = await fetch(`${API_URL}/vendor/pizzas`, {
+      const res = await authFetch(`/vendor/pizzas`, {
         method: "POST",
         headers,
         credentials: "include",

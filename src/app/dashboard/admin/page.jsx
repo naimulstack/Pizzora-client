@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import {
   Users,
   ShoppingBag,
@@ -40,7 +41,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/admin/stats`, {
+    authFetch(`/admin/stats`, {
       credentials: "include",
       cache: "no-store",
     })

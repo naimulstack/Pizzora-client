@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import {
@@ -61,11 +62,11 @@ const PizzaRequestsPage = () => {
         try {
             setLoading(true);
             const [pendingRes, statsRes] = await Promise.all([
-                fetch(`${API_URL}/admin/pending-pizzas`, {
+                authFetch(`/admin/pending-pizzas`, {
                     credentials: "include",
                     cache: "no-store",
                 }),
-                fetch(`${API_URL}/admin/stats`, {
+                authFetch(`/admin/stats`, {
                     credentials: "include",
                     cache: "no-store",
                 }),
@@ -371,19 +372,19 @@ const PizzaRequestsPage = () => {
 
                                             <span className="flex items-center gap-1.5">
                                                 <Mail size={13} />
-                                                {pizza.vendorEmail || "â€”"}
+                                                {pizza.vendorEmail || "Ã¢â‚¬â€"}
                                             </span>
 
                                             <span className="flex items-center gap-1.5">
                                                 <MapPin size={13} />
-                                                {pizza.location || "â€”"}
+                                                {pizza.location || "Ã¢â‚¬â€"}
                                             </span>
 
                                             <span className="flex items-center gap-1.5">
                                                 <Clock size={13} />
                                                 {pizza.preparationTime
                                                     ? `${pizza.preparationTime} min`
-                                                    : "â€”"}
+                                                    : "Ã¢â‚¬â€"}
                                             </span>
                                         </div>
 
@@ -400,7 +401,7 @@ const PizzaRequestsPage = () => {
                                                           day: "numeric",
                                                       }
                                                   )
-                                                : "â€”"}
+                                                : "Ã¢â‚¬â€"}
                                         </p>
 
                                         <div className="flex flex-wrap gap-3 pt-1">

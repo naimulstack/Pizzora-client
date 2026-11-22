@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import {
@@ -31,7 +32,7 @@ export default function AdminNotificationsPage() {
       if (isManualRefresh) setRefreshing(true);
       else setLoading(true);
 
-      const res = await fetch(`${API_URL}/notifications?role=admin`, {
+      const res = await authFetch(`/notifications?role=admin`, {
         credentials: "include",
         cache: "no-store",
       });
@@ -60,7 +61,7 @@ export default function AdminNotificationsPage() {
 
   const handleMarkAsRead = async (id) => {
     try {
-      const res = await fetch(`${API_URL}/notifications/${id}/read`, {
+      const res = await authFetch(`/notifications/${id}/read`, {
         method: "PATCH",
         credentials: "include",
       });
@@ -81,7 +82,7 @@ export default function AdminNotificationsPage() {
     try {
       await Promise.all(
         unreadItems.map((item) =>
-          fetch(`${API_URL}/notifications/${item._id}/read`, {
+          authFetch(`/notifications/${item._id}/read`, {
             method: "PATCH",
             credentials: "include",
           })

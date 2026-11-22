@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import toast from "react-hot-toast";
 import {
   Search,
@@ -34,7 +35,7 @@ const AdminUsersPage = () => {
   const fetchUsers = async (showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/admin/users`, {
+      const res = await authFetch(`/admin/users`, {
         credentials: "include",
         cache: "no-store",
       });
@@ -58,7 +59,7 @@ const AdminUsersPage = () => {
   const handleRoleChange = async (userKey, newRole) => {
     setUpdatingId(userKey);
     try {
-      const res = await fetch(`${API_URL}/admin/users/${userKey}/role`, {
+      const res = await authFetch(`/admin/users/${userKey}/role`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

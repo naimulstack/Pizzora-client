@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import toast from "react-hot-toast";
 import { Store, Check, X, Clock, MapPin, Phone, Mail } from "lucide-react";
 
@@ -22,7 +23,7 @@ export default function AdminVendorRequestsPage() {
 
   const fetchRequests = async () => {
     setLoading(true);
-    const res = await fetch(`${API_URL}/vendor-requests`, {
+    const res = await authFetch(`/vendor-requests`, {
       credentials: "include",
       cache: "no-store",
     }).catch(() => null);
@@ -42,7 +43,7 @@ export default function AdminVendorRequestsPage() {
     setProcessingId(id);
 
     try {
-      const res = await fetch(`${API_URL}/vendor-requests/${id}`, {
+      const res = await authFetch(`/vendor-requests/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
@@ -60,13 +61,13 @@ function VendorCheckoutSuccessContent() {
     }
 
     const syncRequestWithBackend = async () => {
-      // ১. নতুন Stripe পেমেন্ট থেকে এলে একবার POST /vendor-requests করবে
+      // à§§. à¦¨à¦¤à§à¦¨ Stripe à¦ªà§‡à¦®à§‡à¦¨à§à¦Ÿ à¦¥à§‡à¦•à§‡ à¦à¦²à§‡ à¦à¦•à¦¬à¦¾à¦° POST /vendor-requests à¦•à¦°à¦¬à§‡
       if (sessionId && !hasSubmittedRef.current) {
         hasSubmittedRef.current = true;
         setSubmittingRequest(true);
 
         try {
-          const res = await fetch(`${API_URL}/vendor-requests`, {
+          const res = await authFetch(`/vendor-requests`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -114,7 +115,7 @@ function VendorCheckoutSuccessContent() {
         return;
       }
 
-      // ২. ইউজার সরাসরি /become-vendor থেকে রিডাইরেক্ট হয়ে এলে লেটেস্ট স্ট্যাটাস আনবে
+      // à§¨. à¦‡à¦‰à¦œà¦¾à¦° à¦¸à¦°à¦¾à¦¸à¦°à¦¿ /become-vendor à¦¥à§‡à¦•à§‡ à¦°à¦¿à¦¡à¦¾à¦‡à¦°à§‡à¦•à§à¦Ÿ à¦¹à§Ÿà§‡ à¦à¦²à§‡ à¦²à§‡à¦Ÿà§‡à¦¸à§à¦Ÿ à¦¸à§à¦Ÿà§à¦¯à¦¾à¦Ÿà¦¾à¦¸ à¦†à¦¨à¦¬à§‡
       const sessionRes = await authClient.getSession?.().catch(() => null);
       const currentUser = sessionRes?.data?.user || sessionRes?.user || null;
       const email = currentUser?.email || savedApp?.email || savedApp?.userEmail;
@@ -189,7 +190,7 @@ function VendorCheckoutSuccessContent() {
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-zinc-400">
             {isApproved
               ? "Congratulations! Your kitchen is verified and approved as a Pizzora vendor."
-              : "You have already submitted a vendor application. It is currently pending admin review—you do not need to apply again."}
+              : "You have already submitted a vendor application. It is currently pending admin reviewâ€”you do not need to apply again."}
           </p>
 
           {/* Status Pill */}
@@ -258,7 +259,7 @@ function VendorCheckoutSuccessContent() {
                   <span className="text-xs text-zinc-300">
                     {requestDoc.cityArea || requestDoc.location || ""}
                     {requestDoc.fullAddress
-                      ? ` — ${requestDoc.fullAddress}`
+                      ? ` â€” ${requestDoc.fullAddress}`
                       : ""}
                   </span>
                 </div>

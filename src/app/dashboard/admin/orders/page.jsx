@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import {
@@ -41,7 +42,7 @@ const OrdersPage = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_URL}/orders`, {
+        const res = await authFetch(`/orders`, {
           credentials: "include",
           cache: "no-store",
         });

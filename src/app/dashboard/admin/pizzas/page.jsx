@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import {
@@ -35,7 +36,7 @@ export default function AllPizzasPage() {
 
     const fetchPizzas = async () => {
         try {
-            const res = await fetch(`${API_URL}/pizzas`);
+            const res = await authFetch(`/pizzas`);
 
             if (!res.ok) {
                 throw new Error("Failed to fetch pizzas");
@@ -56,7 +57,7 @@ export default function AllPizzasPage() {
 
     const handleDelete = async (id) => {
         try {
-            const res = await fetch(`${API_URL}/pizzas/${id}`, {
+            const res = await authFetch(`/pizzas/${id}`, {
                 method: "DELETE",
             });
 

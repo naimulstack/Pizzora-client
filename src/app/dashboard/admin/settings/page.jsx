@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/api";
 import toast from "react-hot-toast";
 import {
   User,
@@ -52,7 +53,7 @@ const SettingsPage = () => {
       }
     }
 
-    fetch(`${API_URL}/admin/settings`, {
+    authFetch(`/admin/settings`, {
       credentials: "include",
       cache: "no-store",
     })
@@ -85,7 +86,7 @@ const SettingsPage = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
 
     try {
-      const res = await fetch(`${API_URL}/admin/settings`, {
+      const res = await authFetch(`/admin/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
