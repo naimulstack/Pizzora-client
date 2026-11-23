@@ -47,8 +47,8 @@ export default function ItemDetailsPage() {
         let res = await authFetch(`/pizzas/${id}`, { cache: "no-store" });
 
         if (!res.ok && (res.status === 401 || res.status === 403)) {
-          const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app").replace(/\/$/, "");
-          res = await fetch(`${API_URL}/pizzas/${id}`, { cache: "no-store" });
+          const API_URL = (process.env.NEXT_PUBLIC_API_URL).replace(/\/$/, "");
+          res = await fetch(`${API_URL}/pizzas/${_id}`, { cache: "no-store" });
         }
 
         if (res.status === 404) {

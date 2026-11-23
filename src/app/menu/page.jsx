@@ -282,7 +282,7 @@ const MenuPage = () => {
                 <div>
                   {/* Image */}
                   <div className="relative h-52 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950">
-                    <Link href={`/pizzas/${pizza._id}`}>
+                    <Link href={`/menu/${pizza._id}`}>
                       <img
                         src={pizza.image}
                         alt={pizza.name}
@@ -314,10 +314,10 @@ const MenuPage = () => {
                   </div>
 
                   {/* Info */}
-                  <CardHeader className="pb-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <CardTitle className="text-lg font-bold leading-tight text-zinc-900 dark:text-white hover:text-orange-500 dark:hover:text-orange-400 transition">
-                        <Link href={`/pizzas/${pizza._id}`}>{pizza.name}</Link>
+                  <CardHeader className="pb-1 ">
+                    <div className="grid grid-cols-2 items-start justify-between gap-3 pt-4">
+                      <CardTitle className="text-lg font-bold leading-tight text-zinc-900 dark:text-white hover:text-orange-500 dark:hover:text-orange-400 transition ">
+                        <Link href={`/menu/${pizza._id}`}>{pizza.name}</Link>
                       </CardTitle>
                       <div className="shrink-0 text-right">
                         <span className="rounded-xl bg-orange-500/15 px-3 py-1 text-base font-extrabold text-orange-600 dark:text-orange-400">
@@ -364,9 +364,9 @@ const MenuPage = () => {
                   </CardContent>
                 </div>
 
-                <CardFooter className="gap-2 pt-0 pb-4">
+                <CardFooter className="gap-2 pt-0 pb-4 pt-4">
                   <Link
-                    href={`/pizzas/${pizza._id}`}
+                    href={`/menu/${pizza._id}`}
                     className="flex h-10 flex-1 items-center justify-center rounded-xl border border-zinc-200 text-sm font-semibold text-zinc-700 transition hover:border-orange-400 hover:text-orange-500 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-orange-500 dark:hover:text-orange-400"
                   >
                     Details

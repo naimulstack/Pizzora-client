@@ -3,32 +3,24 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "@/lib/api";
 import Link from "next/link";
-import toast from "react-hot-toast";
 import {
   Search,
   ShoppingBag,
   Clock,
   CheckCircle2,
-  XCircle,
   Truck,
   Eye,
   Filter,
-  Loader2,
 } from "lucide-react";
-
-const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app"
-).replace(/\/$/, "");
 
 const STATUS_STYLES = {
   Pending: "bg-yellow-500/10 text-yellow-400",
-  "Pending Admin Review": "bg-yellow-500/10 text-yellow-400",
-  Assigned: "bg-blue-500/10 text-blue-400",
-  "Assigned to Vendor": "bg-blue-500/10 text-blue-400",
   Accepted: "bg-green-500/10 text-green-400",
   Preparing: "bg-orange-500/10 text-orange-400",
+  "On the way": "bg-blue-500/10 text-blue-400",
   Delivered: "bg-emerald-500/10 text-emerald-400",
   Rejected: "bg-red-500/10 text-red-400",
+  Cancelled: "bg-red-500/10 text-red-400",
 };
 
 const OrdersPage = () => {
@@ -36,7 +28,6 @@ const OrdersPage = () => {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All");
   const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -60,40 +51,6 @@ const OrdersPage = () => {
     fetchOrders();
   }, []);
 
-  const handleStatusUpdate = async (order, nextStatus) => {
-    const targetId = order._id || order.orderId;
-    if (!targetId) return;
-
-    try {
-      setUpdatingId(targetId);
-      const res = await authFetch(
-        `/orders/${encodeURIComponent(targetId)}/status`,
-        {
-          method: "PATCH",
-          body: JSON.stringify({ status: nextStatus }),
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok || data?.success === false) {
-        throw new Error(data?.message || `Failed to update status to ${nextStatus}`);
-      }
-
-      setOrders((prev) =>
-        prev.map((item) =>
-          (item._id || item.orderId) === targetId
-            ? { ...item, status: nextStatus }
-            : item
-        )
-      );
-      toast.success(`Order ${nextStatus.toLowerCase()}!`);
-    } catch (err) {
-      toast.error(err.message || "Could not update order status");
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
   const filteredOrders = orders.filter((order) => {
     const orderCode = String(order.orderId || order._id || "");
     const customerName = String(order.customerName || order.customer || "");
@@ -115,23 +72,21 @@ const OrdersPage = () => {
       icon: ShoppingBag,
     },
     {
-      label: "Pending Orders",
+      label: "Pending",
       value: loading
         ? "..."
-        : orders.filter(
-            (o) => !o.status || o.status === "Pending" || o.status === "Pending Admin Review"
-          ).length,
+        : orders.filter((o) => !o.status || o.status === "Pending").length,
       icon: Clock,
     },
     {
-      label: "Accepted Orders",
+      label: "Accepted",
       value: loading
         ? "..."
-        : orders.filter((o) => o.status === "Accepted").length,
+        : orders.filter((o) => o.status === "Accepted" || o.status === "Preparing").length,
       icon: CheckCircle2,
     },
     {
-      label: "Delivered Orders",
+      label: "Delivered",
       value: loading
         ? "..."
         : orders.filter((o) => o.status === "Delivered").length,
@@ -146,10 +101,10 @@ const OrdersPage = () => {
           Pizzora / Orders
         </p>
         <h1 className="mt-2 text-3xl font-bold text-content">
-          Order Management
+          Order Overview
         </h1>
         <p className="mt-2 text-sm text-muted-content">
-          Manage customer orders, accept or reject requests, and assign them to vendors.
+          View all customer orders. Vendors manage order acceptance and delivery.
         </p>
       </div>
 
@@ -179,7 +134,7 @@ const OrdersPage = () => {
           <div>
             <h2 className="font-semibold text-content">All Orders</h2>
             <p className="mt-1 text-sm text-muted-content">
-              Track and manage customer orders.
+              Monitor customer orders and vendor activity.
             </p>
           </div>
 
@@ -204,12 +159,12 @@ const OrdersPage = () => {
                 {[
                   "All",
                   "Pending",
-                  "Pending Admin Review",
-                  "Assigned",
                   "Accepted",
                   "Preparing",
+                  "On the way",
                   "Delivered",
                   "Rejected",
+                  "Cancelled",
                 ].map((item) => (
                   <option key={item} value={item} className="bg-card-surface">
                     {item}
@@ -242,18 +197,16 @@ const OrdersPage = () => {
               ) : filteredOrders.length > 0 ? (
                 filteredOrders.map((order) => {
                   const id = order._id;
-                  const targetId = id || order.orderId;
                   const detailSlug = order.orderId || id;
                   const displayId =
                     order.orderId || `#${String(id).slice(-6).toUpperCase()}`;
                   const customer = order.customerName || order.customer || "Customer";
-                  const vendor = order.vendor || order.vendorName || "Not assigned";
+                  const vendor = order.vendor || order.items?.[0]?.vendor || "—";
                   const amount = order.total ?? order.totalPrice ?? order.amount ?? 0;
                   const orderStatus = order.status || "Pending";
-                  const isBusy = updatingId === targetId;
 
                   return (
-                    <tr key={targetId} className="hover:bg-card-surface/30">
+                    <tr key={id} className="hover:bg-card-surface/30">
                       <td className="px-5 py-5 font-semibold text-orange-400">
                         {displayId}
                       </td>
@@ -270,41 +223,14 @@ const OrdersPage = () => {
                         </span>
                       </td>
                       <td className="px-5 py-5">
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            disabled={isBusy || orderStatus === "Accepted"}
-                            onClick={() => handleStatusUpdate(order, "Accepted")}
-                            title="Accept Order"
-                            className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/15 px-2.5 py-1.5 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-500 hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            {isBusy ? (
-                              <Loader2 size={14} className="animate-spin" />
-                            ) : (
-                              <CheckCircle2 size={14} />
-                            )}
-                            <span>Accept</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            disabled={isBusy || orderStatus === "Rejected"}
-                            onClick={() => handleStatusUpdate(order, "Rejected")}
-                            title="Reject Order"
-                            className="inline-flex items-center gap-1 rounded-lg bg-red-500/15 px-2.5 py-1.5 text-xs font-semibold text-red-400 transition hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            <XCircle size={14} />
-                            <span>Reject</span>
-                          </button>
-
-                          <Link
-                            href={`/dashboard/admin/orders/${encodeURIComponent(detailSlug)}`}
-                            title="View Order Details"
-                            className="rounded-lg bg-card-surface p-2 text-content transition hover:text-orange-400"
-                          >
-                            <Eye size={17} />
-                          </Link>
-                        </div>
+                        <Link
+                          href={`/dashboard/admin/orders/${encodeURIComponent(detailSlug)}`}
+                          title="View Order Details"
+                          className="inline-flex items-center gap-1 rounded-lg bg-card-surface px-3 py-2 text-xs text-content transition hover:text-orange-400"
+                        >
+                          <Eye size={15} />
+                          <span>View</span>
+                        </Link>
                       </td>
                     </tr>
                   );

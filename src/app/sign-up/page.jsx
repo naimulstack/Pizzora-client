@@ -53,6 +53,8 @@ const SignUpPage = () => {
         name,
         email,
         password,
+        phone,
+        role,
         callbackURL: "/auth/redirect",
       });
 

@@ -108,7 +108,7 @@ export default function VendorOrdersPage() {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const res = await authFetch(`/orders/${orderId}/status`, {
+    const res = await authFetch(`/vendor/orders/${orderId}/status`, {
       method: "PATCH",
       credentials: "include",
       headers,
@@ -144,7 +144,7 @@ export default function VendorOrdersPage() {
     order.items?.reduce((sum, i) => sum + Number(i.quantity || 1), 0) ||
     1;
 
-  const getAmount = (order) => Number(order.totalPrice ?? order.amount ?? 0);
+  const getAmount = (order) => Number(order.total ?? order.totalPrice ?? order.amount ?? 0);
 
   const getDateText = (order) => {
     const rawDate = order.createdAt || order.date;

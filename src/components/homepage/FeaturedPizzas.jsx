@@ -48,7 +48,7 @@ const FeaturedPizzas = () => {
           {pizzas.map((pizza) => (
             <div
               key={pizza._id}
-              className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl dark:border-white/10 dark:bg-[#18181B]"
+              className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl dark:border-white/10 dark:bg-[#18181B]"
             >
               {/* Image */}
               <div className="relative h-60 overflow-hidden">
@@ -64,7 +64,7 @@ const FeaturedPizzas = () => {
               </div>
 
               {/* Content */}
-              <div className="p-5">
+              <div className="flex flex-1 flex-col p-5">
                 <div className="mb-2 flex items-start justify-between gap-3">
                   <h3 className="text-xl font-bold">
                     {pizza.name}
@@ -86,7 +86,7 @@ const FeaturedPizzas = () => {
                       ৳{pizza.price}
                     </p>
                     <p className="mt-1 text-xs text-zinc-500">
-                      {pizza.vendor}
+                      {pizza.companyName}
                     </p>
                   </div>
 
@@ -98,7 +98,7 @@ const FeaturedPizzas = () => {
 
                 <Link
                   href={`/menu/${pizza._id}`}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FEC447] py-3 font-bold text-black transition hover:bg-[#f5b92e]"
+                  className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl bg-[#FEC447] py-3 font-bold text-black transition hover:bg-[#f5b92e]"
                 >
                   View Details
                   <ArrowRight size={17} />

@@ -14,6 +14,7 @@ import {
   Truck,
   XCircle,
 } from "lucide-react";
+import Link from "next/link";
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app"
@@ -249,9 +250,12 @@ const AdminDashboard = () => {
                 Latest customer orders
               </p>
             </div>
-            <button className="flex items-center gap-1 text-sm font-medium text-orange-400 transition hover:text-orange-300">
+            <Link
+              href="/dashboard/admin/orders"
+              className="flex items-center gap-1 text-sm font-medium text-orange-400 transition hover:text-orange-300"
+            >
               View all <ArrowUpRight size={16} />
-            </button>
+            </Link>
           </div>
 
           <div className="overflow-x-auto">
@@ -279,17 +283,20 @@ const AdminDashboard = () => {
                         {order.customerName || "Customer"}
                       </td>
                       <td className="px-6 py-5 text-muted-content">
-                        {order.pizzaName || "Pizza Item"}
+                        <div className="flex flex-col gap-1">
+                          {order?.items?.map((item, index) => (
+                            <span key={index}>{item.name}</span>
+                          ))}
+                        </div>
                       </td>
                       <td className="px-6 py-5 font-medium">
-                        ৳{order.totalPrice || 0}
+                        ৳ {order.total || 0}
                       </td>
                       <td className="px-6 py-5">
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-medium ${
-                            STATUS_STYLES[order.status] ||
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[order.status] ||
                             "bg-card-surface text-content"
-                          }`}
+                            }`}
                         >
                           {order.status || "Preparing"}
                         </span>
