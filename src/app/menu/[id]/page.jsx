@@ -44,10 +44,8 @@ export default function ItemDetailsPage() {
         setLoading(true);
         setError("");
 
-        // Try with auth first; if 401/403 fallback to public fetch
         let res = await authFetch(`/pizzas/${id}`, { cache: "no-store" });
 
-        // If auth token not available yet or server rejects, try plain fetch
         if (!res.ok && (res.status === 401 || res.status === 403)) {
           const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app").replace(/\/$/, "");
           res = await fetch(`${API_URL}/pizzas/${id}`, { cache: "no-store" });

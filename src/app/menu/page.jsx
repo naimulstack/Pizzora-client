@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link"; "react";
 import { authFetch } from "@/lib/api";
 import toast from "react-hot-toast";
 import {
@@ -13,7 +13,11 @@ import {
   Pizza,
   Sparkles,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+// Import Link for navigation
+import Link from "next/link";
+
+// ... existing imports remain unchanged
+"@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -101,6 +105,142 @@ const MenuPage = () => {
       return matchesSearch && matchesCategory && matchesLocation;
     });
   }, [pizzas, search, selectedCategory]);
+
+  // Sorting state
+  // Sorting state
+  const [sortOption, setSortOption] = useState('priceLow');
+
+  // Apply sorting to filtered pizzas
+  const sortedPizzas = useMemo(() => {
+    const sorted = [...filteredPizzas];
+    switch (sortOption) {
+      case 'priceLow':
+        sorted.sort((a, b) => (a.discountPrice ?? a.price) - (b.discountPrice ?? b.price));
+        break;
+      case 'priceHigh':
+        sorted.sort((a, b) => (b.discountPrice ?? b.price) - (a.discountPrice ?? a.price));
+        break;
+      case 'prepLow':
+        sorted.sort((a, b) => (a.preparationTime ?? 0) - (b.preparationTime ?? 0));
+        break;
+      case 'prepHigh':
+        sorted.sort((a, b) => (b.preparationTime ?? 0) - (a.preparationTime ?? 0));
+        break;
+      default:
+        break;
+    }
+    return sorted;
+  }, [filteredPizzas, sortOption]);
+
+  // Apply sorting to filtered pizzas
+  const sortedPizzas = useMemo(() => {
+    const sorted = [...filteredPizzas];
+    switch (sortOption) {
+      case 'priceLow':
+        sorted.sort((a, b) => (a.discountPrice ?? a.price) - (b.discountPrice ?? b.price));
+        break;
+      case 'priceHigh':
+        sorted.sort((a, b) => (b.discountPrice ?? b.price) - (a.discountPrice ?? a.price));
+        break;
+      case 'prepLow':
+        sorted.sort((a, b) => (a.preparationTime ?? 0) - (b.preparationTime ?? 0));
+        break;
+      case 'prepHigh':
+        sorted.sort((a, b) => (b.preparationTime ?? 0) - (a.preparationTime ?? 0));
+        break;
+      default:
+        break;
+    }
+    return sorted;
+  }, [filteredPizzas, sortOption]);
+
+  // UI for sorting dropdown (placed after location filter)
+  const sortDropdown = (
+    <div className="mt-3 flex items-center gap-2">
+      <label htmlFor="sort" className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+        Sort by:
+      </label>
+      <select
+        id="sort"
+        value={sortOption}
+        onChange={(e) => setSortOption(e.target.value)}
+        className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-sm focus-visible:ring-orange-500 dark:border-zinc-800 dark:bg-zinc-950/70"
+      >
+        <option value="priceLow">Price: Low → High</option>
+        <option value="priceHigh">Price: High → Low</option>
+        <option value="prepLow">Prep Time: Low → High</option>
+        <option value="prepHigh">Prep Time: High → Low</option>
+      </select>
+    </div>
+  );
+
+  // Sorting state
+  const [sortOption, setSortOption] = useState('priceLow');
+
+  // Apply sorting to filtered pizzas
+  const sortedPizzas = useMemo(() => {
+    const sorted = [...filteredPizzas];
+    switch (sortOption) {
+      case 'priceLow':
+        sorted.sort((a, b) => (a.discountPrice ?? a.price) - (b.discountPrice ?? b.price));
+        break;
+      case 'priceHigh':
+        sorted.sort((a, b) => (b.discountPrice ?? b.price) - (a.discountPrice ?? a.price));
+        break;
+      case 'prepLow':
+        sorted.sort((a, b) => (a.preparationTime ?? 0) - (b.preparationTime ?? 0));
+        break;
+      case 'prepHigh':
+        sorted.sort((a, b) => (b.preparationTime ?? 0) - (a.preparationTime ?? 0));
+        break;
+      default:
+        break;
+    }
+    return sorted;
+  }, [filteredPizzas, sortOption]);
+
+  // Apply sorting to filtered pizzas
+  const sortedPizzas = useMemo(() => {
+    const sorted = [...filteredPizzas];
+    switch (sortOption) {
+      case 'priceLow':
+        sorted.sort((a, b) => (a.discountPrice ?? a.price) - (b.discountPrice ?? b.price));
+        break;
+      case 'priceHigh':
+        sorted.sort((a, b) => (b.discountPrice ?? b.price) - (a.discountPrice ?? a.price));
+        break;
+      case 'prepLow':
+        sorted.sort((a, b) => (a.preparationTime ?? 0) - (b.preparationTime ?? 0));
+        break;
+      case 'prepHigh':
+        sorted.sort((a, b) => (b.preparationTime ?? 0) - (a.preparationTime ?? 0));
+        break;
+      default:
+        break;
+    }
+    return sorted;
+  }, [filteredPizzas, sortOption]);
+  const [sortOption, setSortOption] = useState("priceLowHigh");
+  const sortedPizzas = useMemo(() => {
+    const sorted = [...filteredPizzas];
+    switch (sortOption) {
+      case "priceLowHigh":
+        sorted.sort((a, b) => (a.discountPrice ?? a.price) - (b.discountPrice ?? b.price));
+        break;
+      case "priceHighLow":
+        sorted.sort((a, b) => (b.discountPrice ?? b.price) - (a.discountPrice ?? a.price));
+        break;
+      case "prepLowHigh":
+        sorted.sort((a, b) => (a.preparationTime ?? 0) - (b.preparationTime ?? 0));
+        break;
+      case "prepHighLow":
+        sorted.sort((a, b) => (b.preparationTime ?? 0) - (a.preparationTime ?? 0));
+        break;
+      default:
+        break;
+    }
+    return sorted;
+  }, [filteredPizzas, sortOption]);
 
   const handleAddToCart = (pizza) => {
     addToCart({
