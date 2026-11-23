@@ -5,7 +5,7 @@ import { authFetch } from "@/lib/api";
 import { Store, Search, Users, Eye } from "lucide-react";
 
 const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app"
 ).replace(/\/$/, "");
 
 const VendorsPage = () => {
@@ -40,9 +40,9 @@ const VendorsPage = () => {
   const getStatus = (vendor) => (vendor.isBlocked ? "Suspended" : "Active");
 
   const formatDate = (date) => {
-    if (!date) return "â€”";
+    if (!date) return "";
     const d = new Date(date);
-    if (isNaN(d.getTime())) return "â€”";
+    if (isNaN(d.getTime())) return "";
     return d.toLocaleDateString("en-US", {
       month: "short",
       day: "2-digit",
@@ -190,10 +190,10 @@ const VendorsPage = () => {
                   return (
                     <tr key={vendor._id} className="hover:bg-card-surface/30">
                       <td className="px-5 py-5 font-medium text-content">
-                        {vendor.name || "Unnamed Vendor"}
+                        {vendor.name}
                       </td>
                       <td className="px-5 py-5 text-muted-content">
-                        {vendor.email || "â€”"}
+                        {vendor.email}
                       </td>
                       <td className="px-5 py-5 text-muted-content">
                         {formatDate(vendor.createdAt)}

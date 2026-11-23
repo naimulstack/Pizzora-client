@@ -1,4 +1,5 @@
 
+import { Suspense } from "react";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import NavbarPage from "@/components/homepage/navbar";
@@ -19,13 +20,22 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");var dark=t?t==="dark":true;document.documentElement.classList.toggle("dark",dark);}catch(e){document.documentElement.classList.add("dark");}})()`,
+          }}
+        />
+      </head>
       <body className={`${jakarta.className} min-h-full flex flex-col`}>
         <Toaster position="top-center" />
-        <CartProvider>
-          <NavbarPage />
-          {children}
-        </CartProvider>
+        <Suspense fallback={null}>
+          <CartProvider>
+            <NavbarPage />
+            {children}
+          </CartProvider>
+        </Suspense>
         <Footer />
       </body>
     </html>

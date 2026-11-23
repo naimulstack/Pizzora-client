@@ -15,5 +15,5 @@ export const getProfileHref = (user) => {
   if (user?.role === "admin") return "/dashboard/admin";
   if (user?.role === "vendor") return "/dashboard/vendor/profile";
 
-  return "/customer";
+  return "/dashboard/customer";
 };

@@ -9,7 +9,7 @@ const FeaturedPizzas = () => {
   const [pizzas, setPizzas] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/pizzas")
+    fetch("https://pizzora-server.vercel.app/pizzas")
       .then((res) => res.json())
       .then((data) => setPizzas(data.slice(0, 6)));
   }, []);

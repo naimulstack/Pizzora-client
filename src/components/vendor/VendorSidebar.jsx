@@ -12,6 +12,7 @@ import {
     Bell,
     Store,
     ChevronLeft,
+    Crown,
 } from "lucide-react";
 import DarkLogo from "../../app/Images/Pizzora Freshly Baked Logo.png";
 import BrightLogo from "../../app/Images/Pizzora_Pizz_Gold_Transparent.png";
@@ -42,6 +43,11 @@ const menuItems = [
         name: "Orders",
         href: "/dashboard/vendor/orders",
         icon: ShoppingBag,
+    },
+    {
+        name: "Subscription",
+        href: "/dashboard/vendor/subscription",
+        icon: Crown,
     },
     {
         name: "Messages",

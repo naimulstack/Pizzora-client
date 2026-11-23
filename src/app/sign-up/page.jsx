@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -18,6 +17,7 @@ import {
 
 import DarkLogo from "../../app/Images/Pizzora Freshly Baked Logo.png";
 import { authClient } from "@/lib/auth-client";
+import { authFetch } from "@/lib/api";
 import toast from "react-hot-toast";
 import { FcGoogle } from "react-icons/fc";
 
@@ -27,6 +27,7 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [role, setRole] = useState("customer");
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -36,16 +37,23 @@ const SignUpPage = () => {
 
     const formData = new FormData(e.currentTarget);
 
-    const name = formData.get("name");
-    const email = formData.get("email");
-    const password = formData.get("password");
+    const name = formData.get("name")?.toString().trim();
+    const email = formData.get("email")?.toString().trim();
+    const phone = formData.get("phone")?.toString().trim();
+    const password = formData.get("password")?.toString();
+
+    if (!/[A-Z]/.test(password)) {
+      setError("Password must contain at least one uppercase letter.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const { error } = await authClient.signUp.email({
+      const { data, error } = await authClient.signUp.email({
         name,
         email,
         password,
-        callbackURL: "/",
+        callbackURL: "/auth/redirect",
       });
 
       if (error) {
@@ -53,8 +61,17 @@ const SignUpPage = () => {
         return;
       }
 
-      toast.success("Welcome to Pizzora!");
-      router.push("/");
+      if (role === "vendor") {
+        // Vendor must complete payment to get vendor role.
+        // Sign up as customer first, then redirect to become-vendor payment flow.
+        toast.success(
+          "Account created! Complete the vendor subscription to activate your restaurant."
+        );
+        router.push("/become-vendor/checkout");
+      } else {
+        toast.success("Welcome to Pizzora! Your customer account is ready.");
+        router.push("/dashboard/customer");
+      }
       router.refresh();
     } catch (err) {
       setError(err.message || "Something went wrong.");
@@ -65,11 +82,15 @@ const SignUpPage = () => {
 
   const handleGoogleSignUp = async () => {
     setError("");
+    const selectedRole = role === "vendor" ? "vendor" : "customer";
+
+    document.cookie = `pizzora_signup_role=${selectedRole}; path=/; max-age=600; SameSite=Lax`;
 
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: `/auth/redirect?role=${selectedRole}`,
+        rememberMe: true,
       });
 
       if (error) {
@@ -83,7 +104,6 @@ const SignUpPage = () => {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#FFF8ED] px-5 py-12 dark:bg-[#09090B]">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-2xl dark:border-white/10 dark:bg-[#18181B] lg:grid-cols-2">
-
         <div className="relative hidden flex-col justify-between overflow-hidden bg-[#DF2525] p-12 text-white lg:flex">
           <div className="absolute -bottom-20 -right-20 h-80 w-80 rounded-full bg-orange-400/30 blur-3xl" />
 
@@ -105,14 +125,12 @@ const SignUpPage = () => {
 
             <h1 className="font-serif text-5xl font-extrabold leading-tight">
               Good Food.
-              <span className="block text-[#FEC447]">
-                Great Moments.
-              </span>
+              <span className="block text-[#FEC447]">Great Moments.</span>
             </h1>
 
             <p className="mt-6 max-w-sm text-sm leading-7 text-white/80">
-              Create your Pizzora account and explore amazing pizzas,
-              discover local kitchens and enjoy delicious moments.
+              Create your Pizzora account and explore amazing pizzas, discover
+              local kitchens and enjoy delicious moments.
             </p>
           </div>
 
@@ -122,7 +140,6 @@ const SignUpPage = () => {
         </div>
 
         <div className="flex flex-col justify-center p-7 sm:p-12 lg:p-14">
-
           <Link href="/" className="mb-8 flex items-center gap-2 lg:hidden">
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#DF2525] text-[#FEC447]">
               <FaPizzaSlice size={20} />
@@ -147,7 +164,6 @@ const SignUpPage = () => {
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4">
-
             <div>
               <label className="mb-2 block text-sm font-semibold dark:text-white">
                 Full Name
@@ -201,6 +217,42 @@ const SignUpPage = () => {
               </div>
             </div>
 
+            {/* Account Role */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold dark:text-white">
+                Account Role
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRole("customer")}
+                  className={`flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-semibold transition ${
+                    role === "customer"
+                      ? "border-[#DF2525] bg-[#DF2525]/10 text-[#DF2525]"
+                      : "border-zinc-200 bg-zinc-50 text-zinc-500 hover:border-zinc-300 dark:border-white/10 dark:bg-[#09090B] dark:text-zinc-400"
+                  }`}
+                >
+                  Customer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("vendor")}
+                  className={`flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-semibold transition ${
+                    role === "vendor"
+                      ? "border-[#DF2525] bg-[#DF2525]/10 text-[#DF2525]"
+                      : "border-zinc-200 bg-zinc-50 text-zinc-500 hover:border-zinc-300 dark:border-white/10 dark:bg-[#09090B] dark:text-zinc-400"
+                  }`}
+                >
+                  Vendor
+                </button>
+              </div>
+              {role === "vendor" && (
+                <p className="mt-2 rounded-lg bg-orange-50 px-3 py-2 text-xs text-orange-700 dark:bg-orange-500/10 dark:text-orange-400">
+                  🍕 Vendor account requires a one-time subscription of <strong>৳30,000</strong>. After signup you&apos;ll be redirected to complete payment.
+                </p>
+              )}
+            </div>
+
             <div>
               <label className="mb-2 block text-sm font-semibold dark:text-white">
                 Password
@@ -240,9 +292,13 @@ const SignUpPage = () => {
                   Terms of Service
                 </Link>{" "}
                 and{" "}
-                <Link href="/privacy-policy" className="font-bold text-[#DF2525]">
+                <Link
+                  href="/privacy-policy"
+                  className="font-bold text-[#DF2525]"
+                >
                   Privacy Policy
-                </Link>.
+                </Link>
+                .
               </span>
             </label>
 
@@ -255,7 +311,7 @@ const SignUpPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="cursor-pointer flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#DF2525] font-bold text-white transition hover:bg-[#BD1919] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#DF2525] font-bold text-white transition hover:bg-[#BD1919] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Creating Account..." : "Create Account"}
               {!loading && <FaArrowRight />}
@@ -271,7 +327,7 @@ const SignUpPage = () => {
           <button
             type="button"
             onClick={handleGoogleSignUp}
-            className="cursor-pointer flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-zinc-200 text-sm font-semibold transition hover:bg-zinc-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
+            className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-zinc-200 text-sm font-semibold transition hover:bg-zinc-50 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
           >
             <FcGoogle className="text-[#DB4437]" size={17} />
             Continue with Google
@@ -286,7 +342,6 @@ const SignUpPage = () => {
               Sign In
             </Link>
           </p>
-
         </div>
       </div>
     </main>

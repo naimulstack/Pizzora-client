@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/card";
 
 const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app"
 ).replace(/\/$/, "");
 
 const CATEGORY_META = {
@@ -268,7 +268,7 @@ export default function CategoriesPage() {
                       </span>
                     </div>
                     <CardDescription className="text-xs text-muted-content">
-                      {pizza.category} â€¢ {pizza.vendor || "Pizzora Kitchen"}
+                      {pizza.category} ৳ {pizza.vendor || "Pizzora Kitchen"}
                     </CardDescription>
                   </CardHeader>
 

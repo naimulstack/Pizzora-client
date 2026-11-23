@@ -30,6 +30,7 @@ const categories = [
 
 const Footer = () => {
   const [isDark, setIsDark] = useState(false);
+  const [currentYear] = useState(2026);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -187,7 +188,7 @@ const Footer = () => {
         {/* Bottom Footer */}
         <div className="mt-12 flex flex-col items-center justify-between gap-5 border-t border-zinc-100 pt-7 dark:border-white/10 sm:flex-row">
           <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
-            © {new Date().getFullYear()} Pizzora Artisanal Pizzeria & Delivery.
+            © {currentYear} Pizzora Artisanal Pizzeria & Delivery.
             All rights reserved.
           </p>
 

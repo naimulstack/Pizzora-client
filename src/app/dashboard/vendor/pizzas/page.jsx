@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app"
 ).replace(/\/$/, "");
 
 const statusStyle = {
@@ -360,7 +360,7 @@ export default function MyPizzasPage() {
                   <div className="min-w-0 flex-1">
                     <h3 className="font-bold">{pizza.name}</h3>
                     <p className="mt-1 text-sm text-muted-content">
-                      {pizza.category} Â· Added{" "}
+                      {pizza.category} · Added{" "}
                       {pizza.createdAt
                         ? new Date(pizza.createdAt).toLocaleDateString()
                         : "Recently"}

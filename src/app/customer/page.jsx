@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { authFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import {
   UserRound,
@@ -23,164 +23,95 @@ import { useSession, signOut } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  useCustomerOrders,
+  getOrderAmount,
+  getOrderTitle,
+  formatStatus,
+  statusStyles,
+  ACTIVE_STATUSES,
+  DELIVERED_STATUSES,
+  CANCELLED_STATUSES,
+} from "@/hooks/useCustomerOrders";
 import { getInitials } from "@/lib/utils";
-
-const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-).replace(/\/$/, "");
-
-const ACTIVE_STATUSES = [
-  "pending",
-  "accepted",
-  "approved",
-  "preparing",
-  "processing",
-  "on the way",
-];
-
-const DELIVERED_STATUSES = ["delivered", "completed"];
-const CANCELLED_STATUSES = ["cancelled", "canceled", "rejected"];
-
-const statusStyle = {
-  delivered: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  completed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  accepted: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-  approved: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-  preparing: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  processing: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  "on the way": "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  cancelled: "bg-red-500/10 text-red-400 border-red-500/20",
-  canceled: "bg-red-500/10 text-red-400 border-red-500/20",
-  rejected: "bg-red-500/10 text-red-400 border-red-500/20",
-};
-
-const getOrderAmount = (order) => {
-  const raw =
-    order?.orderAmount ??
-    order?.subtotal ??
-    order?.total ??
-    order?.totalPrice ??
-    order?.totalAmount ??
-    order?.amount ??
-    0;
-  const num = Number(String(raw).replace(/[^\d.-]/g, ""));
-  return Number.isNaN(num) ? 0 : num;
-};
-
-const getOrderTitle = (order) => {
-  if (order?.pizzaName || order?.pizza || order?.title) {
-    return order.pizzaName || order.pizza || order.title;
-  }
-  if (Array.isArray(order?.items) && order.items.length > 0) {
-    const first = order.items[0]?.name || order.items[0]?.title || "Pizza Order";
-    return order.items.length > 1
-      ? `${first} +${order.items.length - 1} more`
-      : first;
-  }
-  return "Pizzora Special Order";
-};
-
-const formatStatus = (status) => {
-  const clean = String(status || "Pending").trim();
-  return clean.charAt(0).toUpperCase() + clean.slice(1);
-};
 
 export default function CustomerProfilePage() {
   const router = useRouter();
   const { data: session, isPending: sessionLoading } = useSession();
 
   const [loggingOut, setLoggingOut] = useState(false);
-  const [orders, setOrders] = useState([]);
-  const [statsData, setStatsData] = useState({
-    totalOrders: 0,
-    activeOrders: 0,
-    deliveredOrders: 0,
-    totalSpent: 0,
-  });
-  const [loadingOrders, setLoadingOrders] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState("all");
 
   const user = session?.user;
 
-  const fetchOrders = useCallback(
-    async (isRefresh = false) => {
-      if (!user?.email && !user?.id) {
-        setLoadingOrders(false);
-        return;
-      }
+  const {
+    orders,
+    loading: loadingOrders,
+    refreshing,
+    fetchOrders,
+  } = useCustomerOrders(user);
 
-      if (isRefresh) setRefreshing(true);
-      else setLoadingOrders(true);
-
-      try {
-        const params = new URLSearchParams();
-        if (user.email) params.set("email", user.email.trim().toLowerCase());
-        if (user.id) params.set("userId", String(user.id).trim());
-        const query = `?${params.toString()}`;
-
-        let res = await authFetch(`/customer/orders${query}`, {
-          credentials: "include",
-          cache: "no-store",
-        }).catch(() => null);
-
-        if (!res?.ok) {
-          res = await authFetch(`/orders${query}`, {
-            credentials: "include",
-            cache: "no-store",
-          }).catch(() => null);
-        }
-
-        if (res?.ok) {
-          const data = await res.json().catch(() => ({}));
-          const list = Array.isArray(data)
-            ? data
-            : Array.isArray(data?.orders)
-              ? data.orders
-              : Array.isArray(data?.data)
-                ? data.data
-                : [];
-
-          setOrders(list);
-
-          const delivered = list.filter((o) =>
-            DELIVERED_STATUSES.includes(String(o.status || "").toLowerCase())
-          );
-          const active = list.filter((o) =>
-            ACTIVE_STATUSES.includes(
-              String(o.status || "pending").toLowerCase()
-            )
-          );
-          const spent = delivered.reduce(
-            (sum, o) => sum + getOrderAmount(o),
-            0
-          );
-
-          setStatsData({
-            totalOrders: Number(data?.stats?.totalOrders ?? list.length),
-            activeOrders: Number(data?.stats?.activeOrders ?? active.length),
-            deliveredOrders: Number(
-              data?.stats?.deliveredOrders ?? delivered.length
-            ),
-            totalSpent: Number(data?.stats?.totalSpent ?? spent),
-          });
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingOrders(false);
-        setRefreshing(false);
-      }
-    },
-    [user?.email, user?.id]
+  const deliveredOrders = useMemo(
+    () =>
+      orders.filter((order) =>
+        DELIVERED_STATUSES.includes(
+          String(order.status || "").trim().toLowerCase()
+        )
+      ),
+    [orders]
   );
 
-  useEffect(() => {
-    if (!sessionLoading) {
-      fetchOrders(false);
+  const activeOrders = useMemo(
+    () =>
+      orders.filter((order) =>
+        ACTIVE_STATUSES.includes(
+          String(order.status || "pending").trim().toLowerCase()
+        )
+      ),
+    [orders]
+  );
+
+  const statsData = {
+    totalOrders: orders.length,
+    activeOrders: activeOrders.length,
+    deliveredOrders: deliveredOrders.length,
+    totalSpent: deliveredOrders.reduce(
+      (sum, order) => sum + getOrderAmount(order),
+      0
+    ),
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      let cancelled = false;
+
+      const res = await authFetch(`/orders/${orderId}/cancel`, {
+        method: "PATCH",
+        credentials: "include",
+      }).catch(() => null);
+
+      if (res?.ok) {
+        cancelled = true;
+      } else {
+        const res2 = await authFetch(`/orders/${orderId}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ status: "cancelled" }),
+        }).catch(() => null);
+        if (res2?.ok) cancelled = true;
+      }
+
+      if (cancelled) {
+        await fetchOrders(true);
+        toast.success("Order cancelled successfully.");
+      } else {
+        toast.error("Could not cancel order. Please try again.");
+      }
+    } catch {
+      toast.error("Could not cancel order.");
     }
-  }, [sessionLoading, fetchOrders]);
+  };
 
   const handleSignOut = async () => {
     setLoggingOut(true);
@@ -339,7 +270,7 @@ export default function CustomerProfilePage() {
               <div className="mt-3 flex flex-col items-center gap-2 text-sm text-orange-50/90 sm:flex-row sm:flex-wrap sm:gap-5">
                 <span className="flex items-center gap-1.5">
                   <Mail className="h-4 w-4 text-black/80" />
-                  {user.email || "â€”"}
+                  {user.email || ""}
                 </span>
 
                 {user.createdAt && (
@@ -477,11 +408,11 @@ export default function CustomerProfilePage() {
                             <span className="font-mono text-orange-400">
                               {shortId}
                             </span>
-                            <span>â€¢</span>
+                            <span>◦</span>
                             <span>{dateLabel}</span>
                             {(order.address || order.deliveryAddress) && (
                               <>
-                                <span>â€¢</span>
+                                <span>◦</span>
                                 <span className="inline-flex items-center gap-1">
                                   <MapPin className="h-3 w-3 text-orange-400" />
                                   {order.address || order.deliveryAddress}
@@ -495,7 +426,7 @@ export default function CustomerProfilePage() {
                       <div className="flex items-center justify-between gap-4 border-t border-surface/70 pt-3 sm:justify-end sm:border-t-0 sm:pt-0">
                         <span
                           className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                            statusStyle[st] ||
+                            statusStyles[st] ||
                             "border-surface bg-surface text-muted-content"
                           }`}
                         >
@@ -504,6 +435,15 @@ export default function CustomerProfilePage() {
                         <span className="text-base font-extrabold text-orange-400">
                           ৳{getOrderAmount(order).toLocaleString()}
                         </span>
+                        {st === "pending" && (
+                          <button
+                            type="button"
+                            onClick={() => handleCancelOrder(id)}
+                            className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-400 transition hover:bg-red-500/20"
+                          >
+                            Cancel
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

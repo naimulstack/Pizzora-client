@@ -14,6 +14,7 @@ import {
     Settings,
     X,
     ChefHat,
+    CreditCard,
 } from "lucide-react";
 import DarkLogo from "../../app/Images/Pizzora Freshly Baked Logo.png";
 import BrightLogo from "../../app/Images/Pizzora_Pizz_Gold_Transparent.png";
@@ -62,6 +63,11 @@ const menuItems = [
                 name: "User Management",
                 href: "/dashboard/admin/users",
                 icon: Users,
+            },
+            {
+                name: "Transactions",
+                href: "/dashboard/admin/transactions",
+                icon: CreditCard,
             },
         ],
     },

@@ -21,7 +21,13 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: "customer",
-        input: false,
+        input: true,
+      },
+      phone: {
+        type: "string",
+        required: false,
+        defaultValue: "",
+        input: true,
       },
     },
   },
@@ -34,7 +40,7 @@ export const auth = betterAuth({
   },
 
   plugins: [jwt()],
-  
+
   baseURL: process.env.BETTER_AUTH_URL,
 
   session: {

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app"
 ).replace(/\/$/, "");
 
 const STORAGE_KEY = "pizzora_admin_settings";

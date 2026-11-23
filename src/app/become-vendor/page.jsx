@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth-client";
+import { authFetch } from "@/lib/api";
 import {
   Store,
   ArrowRight,
@@ -12,11 +13,6 @@ import {
   MapPin,
 } from "lucide-react";
 
-const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-).replace(/\/$/, "");
-
-const VENDOR_FEE = 3000;
 const PREVIEW_STORAGE_KEY = "pizzora_vendor_application_preview";
 const SUBMITTED_REQ_STORAGE_KEY = "pizzora_vendor_submitted_request";
 
@@ -74,15 +70,9 @@ export default function BecomeVendorPage() {
         }
 
         if (currentUser?.email) {
-          const reqRes = await fetch(
-            `${API_URL}/vendor-requests?email=${encodeURIComponent(
-              currentUser.email
-            )}`,
-            {
-              credentials: "include",
-              cache: "no-store",
-            }
-          ).catch(() => null);
+          const reqRes = await authFetch(`/vendor-requests`, {
+            cache: "no-store",
+          }).catch(() => null);
 
           if (reqRes?.ok && active) {
             const list = await reqRes.json().catch(() => []);
@@ -100,7 +90,7 @@ export default function BecomeVendorPage() {
                   JSON.stringify(existingRequest)
                 );
               } catch {
-                // ignore storage error
+
               }
               router.replace(
                 `/become-vendor/checkout-success?status=${encodeURIComponent(
@@ -151,7 +141,7 @@ export default function BecomeVendorPage() {
         userId: user.id || user._id || "",
         userEmail: (formData.email || user.email || "").trim().toLowerCase(),
         userName: formData.ownerName || user.name || "Customer",
-        vendorFee: VENDOR_FEE,
+        vendorFee: 0,
       };
 
       sessionStorage.setItem(PREVIEW_STORAGE_KEY, JSON.stringify(payload));
@@ -190,7 +180,7 @@ export default function BecomeVendorPage() {
               application to your profile.
             </p>
             <Link
-              href="/login"
+              href="/sign-in"
               className="mt-5 inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-semibold text-black hover:bg-orange-400"
             >
               Go to Login
@@ -215,8 +205,8 @@ export default function BecomeVendorPage() {
                   </p>
                 </div>
               </div>
-              <span className="rounded-xl border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-xs font-bold text-orange-400">
-                Onboarding Fee: ৳{VENDOR_FEE.toLocaleString()}
+              <span className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">
+                Free Application · ৳0 Onboarding
               </span>
             </div>
 
@@ -458,7 +448,7 @@ export default function BecomeVendorPage() {
               >
                 {navigating
                   ? "Opening Preview..."
-                  : `Continue to Payment (৳${VENDOR_FEE})`}
+                  : "Continue to Review"}
                 <ArrowRight size={16} />
               </button>
             </div>

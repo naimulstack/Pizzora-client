@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -5,7 +6,6 @@ import { authFetch } from "@/lib/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { authClient } from "@/lib/auth-client";
 import {
   Pizza,
   ArrowLeft,
@@ -19,10 +19,6 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-
-const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-).replace(/\/$/, "");
 
 const CATEGORIES = [
   "Classic Pizza",
@@ -59,6 +55,7 @@ export default function AddPizzaPage() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -77,7 +74,7 @@ export default function AddPizzaPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.sizes.length === 0) {
+    if (!formData.sizes.length) {
       toast.error("Please select at least one pizza size.");
       return;
     }
@@ -93,54 +90,45 @@ export default function AddPizzaPage() {
     setLoading(true);
 
     try {
-      const [sessionData, tokenData] = await Promise.all([
-        authClient.getSession?.().catch(() => null),
-        authClient.token?.().catch(() => null),
-      ]);
-
-      const user = sessionData?.data?.user || sessionData?.user || {};
-      const token = tokenData?.data?.token || tokenData?.token;
-
-      const headers = {
-        "Content-Type": "application/json",
-      };
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      const payload = {
-        ...formData,
-        price: Number(formData.price),
-        discountPrice: formData.discountPrice
-          ? Number(formData.discountPrice)
-          : null,
-        preparationTime: Number(formData.preparationTime),
-        vendorId: user.id || "",
-        vendorEmail: user.email || "",
-        vendorName: user.name || "",
-        vendor: user.companyName || user.name || "Pizzora Vendor",
-        status: "pending",
-        isActive: true,
-      };
-
-      const res = await authFetch(`/vendor/pizzas`, {
+      const res = await authFetch("/vendor/pizzas", {
         method: "POST",
-        headers,
-        credentials: "include",
-        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          price: Number(formData.price),
+          discountPrice: formData.discountPrice
+            ? Number(formData.discountPrice)
+            : null,
+          preparationTime: Number(formData.preparationTime),
+        }),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json();
 
-      if (!res.ok || data.success === false) {
-        throw new Error(data.message || "Pizza submission failed");
+      if (data.code === "TRIAL_ENDED") {
+        toast.error("Free trial ended! Subscribe to Premium to add pizzas.");
+        router.push("/dashboard/vendor/subscription");
+        return;
+      }
+
+      if (data.code === "PLAN_LIMIT_REACHED") {
+        toast.error("Free Plan limit reached! Upgrade to Premium.");
+        router.push("/dashboard/vendor/subscription");
+        return;
+      }
+
+      if (!res.ok) {
+        toast.error(data.message || "Pizza submission failed.");
+        return;
       }
 
       toast.success("Pizza submitted! Status: Pending");
       router.push("/dashboard/vendor/pizzas");
       router.refresh();
-    } catch (error) {
-      toast.error(error.message || "Something went wrong!");
+    } catch {
+      toast.error("Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -168,11 +156,8 @@ export default function AddPizzaPage() {
         </p>
       </div>
 
-      {/* Main Split Layout: Form on Left, Live Preview on Right */}
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* Left Side: Form */}
         <form onSubmit={handleSubmit} className="space-y-7 lg:col-span-7">
-          {/* Basic Information */}
           <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <div className="mb-6 flex items-center gap-3">
               <Pizza className="text-[#FEC447]" size={23} />
@@ -253,7 +238,6 @@ export default function AddPizzaPage() {
             </div>
           </section>
 
-          {/* Pricing */}
           <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <div className="mb-6 flex items-center gap-3">
               <Tag className="text-[#FEC447]" size={23} />
@@ -294,7 +278,6 @@ export default function AddPizzaPage() {
             </div>
           </section>
 
-          {/* Pizza Image */}
           <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <div className="mb-6 flex items-center gap-3">
               <ImagePlus className="text-[#FEC447]" size={23} />
@@ -337,7 +320,6 @@ export default function AddPizzaPage() {
             )}
           </section>
 
-          {/* Ingredients and Sizes */}
           <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <div className="mb-6 flex items-center gap-3">
               <Utensils className="text-[#FEC447]" size={23} />
@@ -382,7 +364,6 @@ export default function AddPizzaPage() {
             </div>
           </section>
 
-          {/* Availability and Location */}
           <section className="rounded-2xl border border-surface bg-card-surface/60 p-6 md:p-8">
             <h2 className="mb-6 text-xl font-bold">
               Availability &amp; Location
@@ -416,7 +397,6 @@ export default function AddPizzaPage() {
             </label>
           </section>
 
-          {/* Submit */}
           <div className="flex flex-wrap justify-end gap-3">
             <Link
               href="/dashboard/vendor/pizzas"
@@ -436,7 +416,6 @@ export default function AddPizzaPage() {
           </div>
         </form>
 
-        {/* Right Side: Live Pizza Preview Card */}
         <div className="lg:col-span-5">
           <div className="sticky top-8">
             <div className="mb-3 flex items-center justify-between">
@@ -449,7 +428,6 @@ export default function AddPizzaPage() {
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-surface bg-card-surface/80 shadow-xl">
-              {/* Image Section */}
               <div className="relative h-56 w-full bg-card-surface">
                 {formData.image ? (
                   <img
@@ -467,7 +445,6 @@ export default function AddPizzaPage() {
                   </div>
                 )}
 
-                {/* Availability Badge */}
                 <div className="absolute left-4 top-4">
                   {formData.isAvailable ? (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
@@ -482,7 +459,6 @@ export default function AddPizzaPage() {
                   )}
                 </div>
 
-                {/* Category Pill */}
                 <div className="absolute bottom-4 left-4">
                   <span className="rounded-lg bg-surface-deep/85 px-3 py-1 text-xs font-medium text-[#FEC447] backdrop-blur-sm">
                     {formData.category || "Category"}
@@ -490,9 +466,7 @@ export default function AddPizzaPage() {
                 </div>
               </div>
 
-              {/* Card Body */}
               <div className="p-6">
-                {/* Title & Prep Time */}
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-xl font-bold text-content">
                     {formData.name || "Your Pizza Name"}
@@ -505,7 +479,6 @@ export default function AddPizzaPage() {
                   </span>
                 </div>
 
-                {/* Price */}
                 <div className="mt-3 flex items-baseline gap-2.5">
                   {formData.discountPrice ? (
                     <>
@@ -523,19 +496,17 @@ export default function AddPizzaPage() {
                   )}
                 </div>
 
-                {/* Description */}
                 <p className="mt-3 text-sm leading-relaxed text-content">
                   {formData.description ||
                     "Your pizza description will appear here. Highlight the crust, sauce, and toppings."}
                 </p>
 
-                {/* Sizes */}
                 <div className="mt-5 border-t border-surface pt-4">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-content">
                     Available Sizes
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {formData.sizes.length > 0 ? (
+                    {formData.sizes.length ? (
                       formData.sizes.map((size) => (
                         <span
                           key={size}
@@ -552,16 +523,15 @@ export default function AddPizzaPage() {
                   </div>
                 </div>
 
-                {/* Ingredients */}
                 <div className="mt-5 border-t border-surface pt-4">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-content">
                     Ingredients
                   </p>
-                  {ingredientList.length > 0 ? (
+                  {ingredientList.length ? (
                     <div className="flex flex-wrap gap-1.5">
-                      {ingredientList.map((item, idx) => (
+                      {ingredientList.map((item, index) => (
                         <span
-                          key={`${item}-${idx}`}
+                          key={`${item}-${index}`}
                           className="rounded-md bg-card-surface px-2.5 py-1 text-xs text-content"
                         >
                           {item}
@@ -575,7 +545,6 @@ export default function AddPizzaPage() {
                   )}
                 </div>
 
-                {/* Location */}
                 <div className="mt-5 flex items-center gap-2 border-t border-surface pt-4 text-xs text-muted-content">
                   <MapPin size={14} className="shrink-0 text-[#FEC447]" />
                   <span>{formData.location || "Pizza Location"}</span>

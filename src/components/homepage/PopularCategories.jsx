@@ -50,7 +50,7 @@ const PopularCategories = () => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/pizzas")
+    fetch("https://pizzora-server.vercel.app/pizzas")
       .then((res) => res.json())
       .then((data) => {
         const uniqueCategories = [

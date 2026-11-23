@@ -32,6 +32,7 @@ const MenuPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedLocation, setSelectedLocation] = useState("All");
 
   useEffect(() => {
     const loadPizzas = async () => {
@@ -66,6 +67,13 @@ const MenuPage = () => {
     return ["All", ...uniqueCategories];
   }, [pizzas]);
 
+  const locations = useMemo(() => {
+    const uniqueLocations = new Set(
+      pizzas.map((pizza) => pizza.location).filter(Boolean)
+    );
+    return ["All", ...uniqueLocations];
+  }, [pizzas]);
+
   const filteredPizzas = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -85,7 +93,12 @@ const MenuPage = () => {
           ? true
           : pizza.category === selectedCategory;
 
-      return matchesSearch && matchesCategory;
+      const matchesLocation =
+        selectedLocation === "All"
+          ? true
+          : pizza.location === selectedLocation;
+
+      return matchesSearch && matchesCategory && matchesLocation;
     });
   }, [pizzas, search, selectedCategory]);
 
@@ -151,6 +164,30 @@ const MenuPage = () => {
                   }`}
                 >
                   {category}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Location Filter */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+              Location:
+            </span>
+            {locations.map((loc) => {
+              const active = selectedLocation === loc;
+              return (
+                <button
+                  key={loc}
+                  type="button"
+                  onClick={() => setSelectedLocation(loc)}
+                  className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
+                    active
+                      ? "bg-orange-500 text-black shadow-sm shadow-orange-500/20"
+                      : "border border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:text-white"
+                  }`}
+                >
+                  {loc}
                 </button>
               );
             })}

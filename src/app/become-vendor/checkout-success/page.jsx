@@ -17,11 +17,6 @@ import {
   Clock,
 } from "lucide-react";
 
-const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-).replace(/\/$/, "");
-
-const VENDOR_FEE = 3000;
 const PREVIEW_STORAGE_KEY = "pizzora_vendor_application_preview";
 const SUBMITTED_REQ_STORAGE_KEY = "pizzora_vendor_submitted_request";
 
@@ -41,27 +36,40 @@ function VendorCheckoutSuccessContent() {
     let active = true;
 
     let savedApp = null;
+    let storedDoc = null;
+
     try {
       const rawSubmitted = sessionStorage.getItem(SUBMITTED_REQ_STORAGE_KEY);
       if (rawSubmitted) {
-        const parsedSubmitted = JSON.parse(rawSubmitted);
-        setRequestDoc(parsedSubmitted);
-        if (parsedSubmitted?.status) {
-          setStatus(parsedSubmitted.status);
-        }
+        storedDoc = JSON.parse(rawSubmitted);
       }
 
       const rawPreview = sessionStorage.getItem(PREVIEW_STORAGE_KEY);
       if (rawPreview) {
         savedApp = JSON.parse(rawPreview);
-        setRequestDoc((prev) => prev || savedApp);
       }
     } catch {
       savedApp = null;
     }
 
+    if (storedDoc || savedApp) {
+      queueMicrotask(() => {
+        if (!active) return;
+
+        if (storedDoc) {
+          setRequestDoc(storedDoc);
+          if (storedDoc?.status) {
+            setStatus(storedDoc.status);
+          }
+        }
+
+        if (savedApp) {
+          setRequestDoc((prev) => prev || savedApp);
+        }
+      });
+    }
+
     const syncRequestWithBackend = async () => {
-      // à§§. à¦¨à¦¤à§à¦¨ Stripe à¦ªà§‡à¦®à§‡à¦¨à§à¦Ÿ à¦¥à§‡à¦•à§‡ à¦à¦²à§‡ à¦à¦•à¦¬à¦¾à¦° POST /vendor-requests à¦•à¦°à¦¬à§‡
       if (sessionId && !hasSubmittedRef.current) {
         hasSubmittedRef.current = true;
         setSubmittingRequest(true);
@@ -77,9 +85,8 @@ function VendorCheckoutSuccessContent() {
               userEmail: savedApp?.userEmail || savedApp?.email || "",
               userName: savedApp?.userName || savedApp?.ownerName || "Vendor",
               shopName: savedApp?.shopName || "New Partner Kitchen",
-              vendorFee: VENDOR_FEE,
-              paymentStatus: "paid",
-              paymentMethod: "Stripe",
+              vendorFee: 0,
+              paymentStatus: "free",
               stripeSessionId: sessionId,
               transactionId: sessionId,
               status: "pending",
@@ -105,7 +112,7 @@ function VendorCheckoutSuccessContent() {
               );
               sessionStorage.removeItem(PREVIEW_STORAGE_KEY);
             } catch {
-              // ignore storage error
+              
             }
             toast.success("Vendor application submitted! Status: Pending.");
           }
@@ -115,19 +122,14 @@ function VendorCheckoutSuccessContent() {
         return;
       }
 
-      // à§¨. à¦‡à¦‰à¦œà¦¾à¦° à¦¸à¦°à¦¾à¦¸à¦°à¦¿ /become-vendor à¦¥à§‡à¦•à§‡ à¦°à¦¿à¦¡à¦¾à¦‡à¦°à§‡à¦•à§à¦Ÿ à¦¹à§Ÿà§‡ à¦à¦²à§‡ à¦²à§‡à¦Ÿà§‡à¦¸à§à¦Ÿ à¦¸à§à¦Ÿà§à¦¯à¦¾à¦Ÿà¦¾à¦¸ à¦†à¦¨à¦¬à§‡
       const sessionRes = await authClient.getSession?.().catch(() => null);
       const currentUser = sessionRes?.data?.user || sessionRes?.user || null;
       const email = currentUser?.email || savedApp?.email || savedApp?.userEmail;
 
       if (email && active) {
-        const reqRes = await fetch(
-          `${API_URL}/vendor-requests?email=${encodeURIComponent(email)}`,
-          {
-            credentials: "include",
-            cache: "no-store",
-          }
-        ).catch(() => null);
+        const reqRes = await authFetch(`/vendor-requests`, {
+          cache: "no-store",
+        }).catch(() => null);
 
         if (reqRes?.ok && active) {
           const list = await reqRes.json().catch(() => []);
@@ -190,7 +192,7 @@ function VendorCheckoutSuccessContent() {
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-zinc-400">
             {isApproved
               ? "Congratulations! Your kitchen is verified and approved as a Pizzora vendor."
-              : "You have already submitted a vendor application. It is currently pending admin reviewâ€”you do not need to apply again."}
+              : "You have already submitted a vendor application. It is currently pending admin review you do not need to apply again."}
           </p>
 
           {/* Status Pill */}
@@ -259,7 +261,7 @@ function VendorCheckoutSuccessContent() {
                   <span className="text-xs text-zinc-300">
                     {requestDoc.cityArea || requestDoc.location || ""}
                     {requestDoc.fullAddress
-                      ? ` â€” ${requestDoc.fullAddress}`
+                      ? ` ${requestDoc.fullAddress}`
                       : ""}
                   </span>
                 </div>
@@ -268,8 +270,9 @@ function VendorCheckoutSuccessContent() {
               <div className="flex items-center gap-2 border-t border-zinc-800 pt-3 text-xs text-emerald-400">
                 <ShieldCheck size={15} />
                 <span>
-                  Onboarding Fee: ৳
-                  {Number(requestDoc.vendorFee || VENDOR_FEE).toLocaleString()}
+                  {Number(requestDoc.vendorFee || 0) > 0
+                    ? `Onboarding Fee: ৳${Number(requestDoc.vendorFee).toLocaleString()}`
+                    : "Application Fee: ৳0 (Free) · 1 month free trial after approval"}
                 </span>
               </div>
             </div>
@@ -287,7 +290,7 @@ function VendorCheckoutSuccessContent() {
               </Link>
             ) : (
               <Link
-                href="/dashboard"
+                href="/dashboard/customer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-6 py-3.5 text-sm font-bold text-black transition hover:bg-orange-400"
               >
                 Go to Dashboard

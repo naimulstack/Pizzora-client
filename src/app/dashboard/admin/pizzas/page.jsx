@@ -27,7 +27,13 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app";
+
+const STATUS_STYLES = {
+    pending: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    approved: "bg-green-500/10 text-green-400 border-green-500/20",
+    rejected: "bg-red-500/10 text-red-400 border-red-500/20",
+};
 
 export default function AllPizzasPage() {
     const [pizzas, setPizzas] = useState([]);
@@ -200,6 +206,7 @@ export default function AllPizzasPage() {
                                         <th className="px-6 py-4">Pizza</th>
                                         <th className="px-6 py-4">Category</th>
                                         <th className="px-6 py-4">Price</th>
+                                        <th className="px-6 py-4">Status</th>
                                         <th className="px-6 py-4">Actions</th>
                                     </tr>
                                 </thead>
@@ -235,6 +242,20 @@ export default function AllPizzasPage() {
 
                                             <td className="px-6 py-4 font-semibold text-orange-400">
                                                 ${pizza.price ?? 0}
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <span
+                                                    className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${
+                                                        STATUS_STYLES[
+                                                            String(pizza.status || "pending")
+                                                                .trim()
+                                                                .toLowerCase()
+                                                        ] || STATUS_STYLES.pending
+                                                    }`}
+                                                >
+                                                    {pizza.status || "Pending"}
+                                                </span>
                                             </td>
 
                                             <td className="px-6 py-4">

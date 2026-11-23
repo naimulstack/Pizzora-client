@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const API_URL = (
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+    process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app"
 ).replace(/\/$/, "");
 
 const CATEGORIES = [
@@ -97,59 +97,61 @@ const PizzaRequestsPage = () => {
     }, []);
 
     const handleApprove = async (pizza) => {
-        try {
-            const res = await fetch(
-                `${API_URL}/admin/pizzas/${pizza._id}/approve`,
-                {
-                    method: "PATCH",
-                    credentials: "include",
-                }
-            );
+        const res = await authFetch(`/admin/pizzas/${pizza._id}/approve`, {
+            method: "PATCH",
+        });
 
-            if (!res.ok) throw new Error("Approve failed");
-
-            setPizzas((prev) => prev.filter((item) => item._id !== pizza._id));
-            setStats((prev) => ({
-                ...prev,
-                pendingPizzas: Math.max(prev.pendingPizzas - 1, 0),
-                approvedPizzas: prev.approvedPizzas + 1,
-            }));
-            toast.success(`"${pizza.name}" approved and published.`);
-        } catch {
-            toast.error("Could not approve pizza.");
+        if (!res.ok) {
+            const data = await res.json();
+            toast.error(data.message || "Could not approve pizza.");
+            return;
         }
+
+        setPizzas((prev) => prev.filter((item) => item._id !== pizza._id));
+
+        setStats((prev) => ({
+            ...prev,
+            pendingPizzas: Math.max(prev.pendingPizzas - 1, 0),
+            approvedPizzas: prev.approvedPizzas + 1,
+        }));
+
+        toast.success(`"${pizza.name}" approved and published.`);
     };
 
     const handleReject = async () => {
         if (!rejectingPizza) return;
 
-        try {
-            const res = await fetch(
-                `${API_URL}/admin/pizzas/${rejectingPizza._id}/reject`,
-                {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                    body: JSON.stringify({ rejectionReason }),
-                }
-            );
+        const res = await authFetch(
+            `/admin/pizzas/${rejectingPizza._id}/reject`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ rejectionReason }),
+            }
+        );
 
-            if (!res.ok) throw new Error("Reject failed");
-
-            setPizzas((prev) =>
-                prev.filter((item) => item._id !== rejectingPizza._id)
-            );
-            setStats((prev) => ({
-                ...prev,
-                pendingPizzas: Math.max(prev.pendingPizzas - 1, 0),
-                rejectedPizzas: prev.rejectedPizzas + 1,
-            }));
-            toast.success(`"${rejectingPizza.name}" rejected.`);
-            setRejectingPizza(null);
-            setRejectionReason("");
-        } catch {
-            toast.error("Could not reject pizza.");
+        if (!res.ok) {
+            const data = await res.json();
+            toast.error(data.message || "Could not reject pizza.");
+            return;
         }
+
+        setPizzas((prev) =>
+            prev.filter((item) => item._id !== rejectingPizza._id)
+        );
+
+        setStats((prev) => ({
+            ...prev,
+            pendingPizzas: Math.max(prev.pendingPizzas - 1, 0),
+            rejectedPizzas: prev.rejectedPizzas + 1,
+        }));
+
+        toast.success(`"${rejectingPizza.name}" rejected.`);
+
+        setRejectingPizza(null);
+        setRejectionReason("");
     };
 
     const filteredPizzas = pizzas.filter((pizza) => {
@@ -372,19 +374,19 @@ const PizzaRequestsPage = () => {
 
                                             <span className="flex items-center gap-1.5">
                                                 <Mail size={13} />
-                                                {pizza.vendorEmail || "Ã¢â‚¬â€"}
+                                                {pizza.vendorEmail}
                                             </span>
 
                                             <span className="flex items-center gap-1.5">
                                                 <MapPin size={13} />
-                                                {pizza.location || "Ã¢â‚¬â€"}
+                                                {pizza.location}
                                             </span>
 
                                             <span className="flex items-center gap-1.5">
                                                 <Clock size={13} />
                                                 {pizza.preparationTime
                                                     ? `${pizza.preparationTime} min`
-                                                    : "Ã¢â‚¬â€"}
+                                                    : "30 minutes"}
                                             </span>
                                         </div>
 
@@ -392,16 +394,16 @@ const PizzaRequestsPage = () => {
                                             Submitted{" "}
                                             {pizza.createdAt
                                                 ? new Date(
-                                                      pizza.createdAt
-                                                  ).toLocaleDateString(
-                                                      "en-US",
-                                                      {
-                                                          year: "numeric",
-                                                          month: "short",
-                                                          day: "numeric",
-                                                      }
-                                                  )
-                                                : "Ã¢â‚¬â€"}
+                                                    pizza.createdAt
+                                                ).toLocaleDateString(
+                                                    "en-US",
+                                                    {
+                                                        year: "numeric",
+                                                        month: "short",
+                                                        day: "numeric",
+                                                    }
+                                                )
+                                                : ""}
                                         </p>
 
                                         <div className="flex flex-wrap gap-3 pt-1">

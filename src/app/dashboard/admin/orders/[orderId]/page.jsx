@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import {
   ArrowLeft,
   Phone,
   MapPin,
+  Calendar,
   CreditCard,
   Banknote,
   Store,
@@ -36,8 +36,6 @@ export default function OrderDetailsPage() {
         setLoading(true);
 
         const token = await getAuthToken();
-
-        console.log("JWT TOKEN EXISTS:", !!token);
 
         if (!token) return;
 
@@ -69,8 +67,6 @@ export default function OrderDetailsPage() {
 
       const token = await getAuthToken();
 
-      console.log("JWT TOKEN EXISTS:", !!token);
-
       if (!token) return;
 
       const response = await authFetch(
@@ -101,12 +97,32 @@ export default function OrderDetailsPage() {
   const formatDate = (dateValue) => {
     if (!dateValue) return "N/A";
 
-    return new Date(dateValue).toLocaleString("en-GB", {
+    const parsed = new Date(dateValue);
+    if (Number.isNaN(parsed.getTime())) {
+      return String(dateValue);
+    }
+
+    return parsed.toLocaleString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+    });
+  };
+
+  const formatDeliveryDate = (deliveryValue) => {
+    if (!deliveryValue) return "N/A";
+
+    const parsed = new Date(deliveryValue);
+    if (Number.isNaN(parsed.getTime())) {
+      return String(deliveryValue);
+    }
+
+    return parsed.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   };
 
@@ -311,6 +327,14 @@ export default function OrderDetailsPage() {
                   </div>
 
                   <div>
+                    <p className="text-xs text-muted-content">Delivery Date</p>
+                    <p className="mt-0.5 flex items-center gap-1.5 font-semibold">
+                      <Calendar className="h-3.5 w-3.5 text-orange-400" />
+                      {formatDeliveryDate(order.deliveryDate)}
+                    </p>
+                  </div>
+
+                  <div className="sm:col-span-2">
                     <p className="text-xs text-muted-content">
                       Delivery Address
                     </p>

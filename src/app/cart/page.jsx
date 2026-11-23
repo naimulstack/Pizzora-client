@@ -27,7 +27,7 @@ import { authClient } from "@/lib/auth-client";
 
 const DELIVERY_FEE = 60;
 const PENDING_ORDER_KEY = "pizzora_pending_stripe_order";
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app").replace(
   /\/$/,
   ""
 );
@@ -53,12 +53,13 @@ export default function CartPage() {
   const [paymentMethod, setPaymentMethod] = useState("online");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [message, setMessage] = useState("");
   const handledStripeRef = useRef(false);
 
   const deliveryFee = cart.length > 0 ? DELIVERY_FEE : 0;
   const total = subtotal + deliveryFee;
 
-  // Stripe payment à¦¸à¦«à¦² à¦¹à§Ÿà§‡ à¦«à¦¿à¦°à§‡ à¦à¦²à§‡ sessionId à¦¸à¦¹ backend-à¦ à¦…à¦°à§à¦¡à¦¾à¦° à¦¸à§‡à¦­ à¦•à¦°à¦¬à§‡
   useEffect(() => {
     const payment = searchParams.get("payment");
     const sessionId = searchParams.get("session_id");
@@ -115,6 +116,11 @@ export default function CartPage() {
       return;
     }
 
+    if (!deliveryDate.trim()) {
+      toast.error("Please select a delivery date.");
+      return;
+    }
+
     setCheckingOut(true);
 
     const orderPayload = {
@@ -122,6 +128,8 @@ export default function CartPage() {
       customerName: session?.user?.name || "Customer",
       phone: phone.trim(),
       address: address.trim(),
+      deliveryDate: deliveryDate.trim(),
+      message: message.trim(),
       items: cart,
       subtotal,
       deliveryFee,
@@ -150,14 +158,14 @@ export default function CartPage() {
         return;
       }
 
-      // Cash on Delivery -> à¦¸à¦°à¦¾à¦¸à¦°à¦¿ backend /orders à¦ à¦ªà¦¾à¦ à¦¾à¦¬à§‡
+      // Cash on Delivery -> save order with payment completed (cash received)
       const res = await authFetch(`/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...orderPayload,
           paymentMethod: "cod",
-          paymentStatus: "unpaid",
+          paymentStatus: "paid",
         }),
       });
 
@@ -166,11 +174,13 @@ export default function CartPage() {
         throw new Error(data?.message || "Failed to place COD order.");
       }
 
-      toast.success(`COD Order placed (${data.order?.orderId || ""}) â€” ৳${total}`);
+      toast.success(`COD Order placed (${data.order?.orderId || ""}) ৳${total}`);
       clearCart();
       setCheckoutOpen(false);
       setPhone("");
       setAddress("");
+      setDeliveryDate("");
+      setMessage("");
       router.push("/menu");
     } catch (error) {
       toast.error(error.message || "Something went wrong.");
@@ -372,7 +382,7 @@ export default function CartPage() {
               <div>
                 <h3 className="text-lg font-bold">Confirm Your Order</h3>
                 <p className="text-xs text-muted-content">
-                  {totalItems} item(s) Â· Total: ৳{total}
+                  {totalItems} item(s) · Total: ৳{total}
                 </p>
               </div>
               <button
@@ -410,6 +420,33 @@ export default function CartPage() {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="House/Road, Area, City"
+                  className="w-full rounded-xl border border-surface bg-surface px-4 py-2.5 text-sm outline-none focus:border-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-content">
+                  Delivery Date <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={deliveryDate}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setDeliveryDate(e.target.value)}
+                  className="w-full rounded-xl border border-surface bg-surface px-4 py-2.5 text-sm outline-none focus:border-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-content">
+                  Special Instructions <span className="text-muted-content font-normal">(optional)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Any special request or note for the restaurant..."
                   className="w-full rounded-xl border border-surface bg-surface px-4 py-2.5 text-sm outline-none focus:border-orange-500"
                 />
               </div>

@@ -1,117 +1,168 @@
-
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useSession } from "@/lib/auth-client";
+import { authFetch } from "@/lib/api";
 import {
   Bell,
   CheckCheck,
-  Trash2,
-  Pizza,
-  ShoppingBag,
-  ShieldCheck,
-  Info,
-  Clock,
   CheckCircle2,
+  ChefHat,
+  ChevronRight,
+  ShoppingBag,
+  Truck,
+  XCircle,
 } from "lucide-react";
+import { formatStatus } from "@/hooks/useCustomerOrders";
 
-const initialNotifications = [
-  {
-    id: 1,
-    title: "Pizza Approved!",
-    description:
-      "Your Margherita Pizza has been approved by the admin and is now live on Pizzora.",
-    type: "approval",
-    time: "10 minutes ago",
-    read: false,
-  },
-  {
-    id: 2,
-    title: "New Order Received",
-    description:
-      "You received a new order for 2 Pepperoni Pizzas. Order #PZ-1001.",
+const statusMeta = {
+  pending: {
     type: "order",
-    time: "1 hour ago",
-    read: false,
+    title: "New Order Received",
+    Icon: ShoppingBag,
+    iconStyle: "bg-amber-500/10 text-amber-400",
   },
-  {
-    id: 3,
-    title: "Pizza Under Review",
-    description:
-      "Your BBQ Chicken Pizza has been submitted and is waiting for admin approval.",
-    type: "pending",
-    time: "Yesterday",
-    read: true,
+  preparing: {
+    type: "preparing",
+    title: "Pizza Preparing",
+    Icon: ChefHat,
+    iconStyle: "bg-orange-500/10 text-orange-400",
   },
-  {
-    id: 4,
-    title: "Profile Updated",
-    description:
-      "Your business profile information has been successfully updated.",
-    type: "system",
-    time: "2 days ago",
-    read: true,
+  "on the way": {
+    type: "delivery",
+    title: "Order On The Way",
+    Icon: Truck,
+    iconStyle: "bg-blue-500/10 text-blue-400",
   },
-  {
-    id: 5,
-    title: "Pizza Rejected",
-    description:
-      "Your Special Pizza submission was rejected. Please review the admin feedback.",
-    type: "rejected",
-    time: "3 days ago",
-    read: false,
+  delivered: {
+    type: "delivered",
+    title: "Order Delivered",
+    Icon: CheckCircle2,
+    iconStyle: "bg-emerald-500/10 text-emerald-400",
   },
-];
-
-const notificationIcons = {
-  approval: CheckCircle2,
-  order: ShoppingBag,
-  pending: Clock,
-  system: Info,
-  rejected: ShieldCheck,
+  cancelled: {
+    type: "cancelled",
+    title: "Order Cancelled",
+    Icon: XCircle,
+    iconStyle: "bg-red-500/10 text-red-400",
+  },
 };
 
-const iconStyles = {
-  approval: "bg-green-500/10 text-green-400",
-  order: "bg-blue-500/10 text-blue-400",
-  pending: "bg-yellow-500/10 text-yellow-400",
-  system: "bg-purple-500/10 text-purple-400",
-  rejected: "bg-red-500/10 text-red-400",
-};
+const getStatusMeta = (status) =>
+  statusMeta[String(status || "pending").trim().toLowerCase()] ||
+  statusMeta.pending;
 
-export default function VendorNotificationsPage() {
-  const [notifications, setNotifications] = useState(
-    initialNotifications
+const isUnreadStatus = (status) =>
+  ["pending", "preparing", "on the way"].includes(
+    String(status || "pending").trim().toLowerCase()
   );
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+const getCustomerName = (order) =>
+  order?.customerName || order?.customer || "Customer";
 
-  const markAllRead = () => {
-    setNotifications((prev) =>
-      prev.map((item) => ({ ...item, read: true }))
-    );
-  };
+const getPizzaName = (order) =>
+  order?.pizzaName || order?.pizza || order?.items?.[0]?.name || "Pizza Item";
+
+export default function VendorNotificationsPage() {
+  const { data: session } = useSession();
+  const user = session?.user;
+
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const params = new URLSearchParams();
+      if (user?.email) params.set("email", user.email);
+      if (user?.name) params.set("vendor", user.name);
+      const query = params.toString() ? `?${params.toString()}` : "";
+
+      const res = await authFetch(`/vendor/orders${query}`, {
+        credentials: "include",
+        cache: "no-store",
+      }).catch(() => null);
+
+      let list = [];
+
+      if (res?.ok) {
+        const raw = await res.json().catch(() => ({}));
+        list = Array.isArray(raw)
+          ? raw
+          : Array.isArray(raw?.orders)
+            ? raw.orders
+            : [];
+      }
+
+      if (list.length === 0) {
+        const fallbackRes = await authFetch(`/orders`, {
+          credentials: "include",
+          cache: "no-store",
+        }).catch(() => null);
+
+        if (fallbackRes?.ok) {
+          const raw = await fallbackRes.json().catch(() => ({}));
+          list = Array.isArray(raw) ? raw : [];
+        }
+      }
+
+      const mapped = list
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+        )
+        .map((order, index) => {
+          const status = String(order.status || "pending")
+            .trim()
+            .toLowerCase();
+          const meta = getStatusMeta(status);
+
+          return {
+            id: String(order._id || order.orderId || index),
+            type: meta.type,
+            title: meta.title,
+            description: `${getCustomerName(order)} • ${getPizzaName(order)}`,
+            amount: order.totalPrice ?? order.amount ?? 0,
+            status,
+            statusLabel: formatStatus(status),
+            time: order.createdAt
+              ? new Date(order.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "Recently",
+            read: !isUnreadStatus(status),
+          };
+        });
+
+      setNotifications(mapped);
+      setLoading(false);
+    };
+
+    fetchOrders();
+  }, [user?.email, user?.name]);
 
   const markRead = (id) => {
     setNotifications((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, read: true } : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, read: true } : item))
     );
   };
 
-  const deleteNotification = (id) => {
-    setNotifications((prev) =>
-      prev.filter((item) => item.id !== id)
-    );
+  const markAllRead = () => {
+    setNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
   };
+
+  const unreadCount = notifications.filter((item) => !item.read).length;
 
   return (
-    <div className="min-h-screen p-6 md:p-10">
+    <div className="min-h-screen p-6 text-content md:p-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Notifications</h1>
           <p className="mt-2 text-sm text-muted-content">
-            Stay updated with your business activities.
+            Stay updated with your customer orders.
           </p>
         </div>
 
@@ -126,7 +177,6 @@ export default function VendorNotificationsPage() {
         </button>
       </div>
 
-      {/* Summary */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-surface bg-card-surface/60 p-6">
           <div className="flex items-center gap-3">
@@ -135,9 +185,7 @@ export default function VendorNotificationsPage() {
             </div>
             <div>
               <p className="text-sm text-muted-content">Total Notifications</p>
-              <h2 className="mt-1 text-2xl font-bold">
-                {notifications.length}
-              </h2>
+              <h2 className="mt-1 text-2xl font-bold">{notifications.length}</h2>
             </div>
           </div>
         </div>
@@ -145,39 +193,40 @@ export default function VendorNotificationsPage() {
         <div className="rounded-2xl border border-surface bg-card-surface/60 p-6">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-yellow-500/10 p-3 text-yellow-400">
-              <Clock size={22} />
+              <CheckCheck size={22} />
             </div>
             <div>
               <p className="text-sm text-muted-content">Unread Notifications</p>
-              <h2 className="mt-1 text-2xl font-bold">
-                {unreadCount}
-              </h2>
+              <h2 className="mt-1 text-2xl font-bold">{unreadCount}</h2>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Notification List */}
       <div className="mt-8 overflow-hidden rounded-2xl border border-surface bg-card-surface/60">
         <div className="flex items-center justify-between border-b border-surface px-6 py-5">
-          <h2 className="font-bold">Recent Notifications</h2>
+          <h2 className="font-bold">Customer Orders</h2>
           <span className="text-xs text-muted-content">
             {unreadCount} unread
           </span>
         </div>
 
-        {notifications.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <span className="h-8 w-8 animate-spin rounded-full border-2 border-[#FEC447] border-t-transparent" />
+          </div>
+        ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-16 text-center">
             <Bell size={45} className="text-muted-content" />
             <h3 className="mt-4 font-semibold">All caught up!</h3>
             <p className="mt-2 text-sm text-muted-content">
-              You don't have any notifications right now.
+              You don&apos;t have any customer orders right now.
             </p>
           </div>
         ) : (
           <div className="divide-y divide-surface">
             {notifications.map((notification) => {
-              const Icon = notificationIcons[notification.type];
+              const { Icon } = getStatusMeta(notification.status);
 
               return (
                 <div
@@ -187,16 +236,18 @@ export default function VendorNotificationsPage() {
                   }`}
                 >
                   <div
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${iconStyles[notification.type]}`}
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
+                      notification.read
+                        ? "bg-surface text-muted-content"
+                        : "bg-[#FEC447]/10 text-[#FEC447]"
+                    }`}
                   >
                     <Icon size={22} />
                   </div>
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-semibold">
-                        {notification.title}
-                      </h3>
+                      <h3 className="font-semibold">{notification.title}</h3>
 
                       {!notification.read && (
                         <span className="h-2 w-2 rounded-full bg-[#FEC447]" />
@@ -224,16 +275,14 @@ export default function VendorNotificationsPage() {
                       </button>
                     )}
 
-                    <button
-                      type="button"
-                      title="Delete notification"
-                      onClick={() =>
-                        deleteNotification(notification.id)
-                      }
-                      className="rounded-lg border border-surface p-2 text-muted-content hover:border-red-500 hover:text-red-400"
+                    <Link
+                      href="/dashboard/vendor/orders"
+                      onClick={() => markRead(notification.id)}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#FEC447] px-3.5 py-1.5 text-xs font-bold text-black transition hover:bg-[#f5b92e]"
                     >
-                      <Trash2 size={17} />
-                    </button>
+                      Manage Order
+                      <ChevronRight size={14} />
+                    </Link>
                   </div>
                 </div>
               );

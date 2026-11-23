@@ -53,7 +53,7 @@ const SignInPage = () => {
       } else if (role === "vendor") {
         router.push("/dashboard/vendor");
       } else {
-        router.push("/");
+        router.push("/dashboard/customer");
       }
       router.refresh();
 
@@ -71,7 +71,7 @@ const SignInPage = () => {
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: "/auth/redirect",
         rememberMe: true
       });
 
@@ -245,7 +245,7 @@ const SignInPage = () => {
           </button>
 
           <p className="mt-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href="/sign-up"
               className="font-bold text-[#DF2525] hover:underline"

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app"
 ).replace(/\/$/, "");
 
 const STATUS_STYLES = {
@@ -66,12 +66,10 @@ const OrdersPage = () => {
 
     try {
       setUpdatingId(targetId);
-      const res = await fetch(
-        `${API_URL}/orders/${encodeURIComponent(targetId)}/status`,
+      const res = await authFetch(
+        `/orders/${encodeURIComponent(targetId)}/status`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({ status: nextStatus }),
         }
       );

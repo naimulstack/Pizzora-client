@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 const API_URL = (
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  process.env.NEXT_PUBLIC_API_URL || "https://pizzora-server.vercel.app"
 ).replace(/\/$/, "");
 
 const statusStyles = {
@@ -320,21 +320,45 @@ export default function VendorOrdersPage() {
                         </span>
                       </td>
                       <td className="px-6 py-5">
-                        <div className="flex items-center gap-2">
-                          <select
-                            disabled={updatingId === order._id}
-                            value={status}
-                            onChange={(e) =>
-                              handleStatusChange(order._id, e.target.value)
-                            }
-                            className="rounded-lg border border-surface bg-card-surface px-2.5 py-1.5 text-xs text-content outline-none focus:border-[#FEC447]"
-                          >
-                            <option value="Pending">Pending</option>
-                            <option value="Preparing">Preparing</option>
-                            <option value="On the way">On the way</option>
-                            <option value="Delivered">Delivered</option>
-                            <option value="Cancelled">Cancelled</option>
-                          </select>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {status === "Pending" ? (
+                            <>
+                              <button
+                                type="button"
+                                disabled={updatingId === order._id}
+                                onClick={() =>
+                                  handleStatusChange(order._id, "Preparing")
+                                }
+                                className="rounded-lg bg-green-500/15 px-3 py-1.5 text-xs font-semibold text-green-400 hover:bg-green-500/25 disabled:opacity-60"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                disabled={updatingId === order._id}
+                                onClick={() =>
+                                  handleStatusChange(order._id, "Cancelled")
+                                }
+                                className="rounded-lg bg-red-500/15 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/25 disabled:opacity-60"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          ) : (
+                            <select
+                              disabled={updatingId === order._id}
+                              value={status}
+                              onChange={(e) =>
+                                handleStatusChange(order._id, e.target.value)
+                              }
+                              className="rounded-lg border border-surface bg-card-surface px-2.5 py-1.5 text-xs text-content outline-none focus:border-[#FEC447]"
+                            >
+                              <option value="Preparing">Preparing</option>
+                              <option value="On the way">On the way</option>
+                              <option value="Delivered">Delivered</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                          )}
 
                           <button
                             type="button"

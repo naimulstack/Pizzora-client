@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,9 @@ import {
   X,
   UserRound,
   LogOut,
+  LayoutDashboard,
+  Settings,
+  ChevronDown,
 } from "lucide-react";
 
 import DarkLogo from "../../app/Images/Pizzora Freshly Baked Logo.png";
@@ -21,6 +24,7 @@ import BrightLogo from "../../app/Images/Pizzora_Pizz_Gold_Transparent.png";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useCart } from "@/context/CartContext";
 import { getInitials, getProfileHref } from "@/lib/utils";
+import CustomerNotifications from "@/components/notifications/CustomerNotifications";
 
 const NavbarPage = () => {
   const router = useRouter();
@@ -33,9 +37,21 @@ const NavbarPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   useEffect(() => {
-    const applyTheme = async () => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useLayoutEffect(() => {
+    const applyTheme = () => {
       const savedTheme = localStorage.getItem("theme");
       const dark = savedTheme !== "light";
 
@@ -44,7 +60,9 @@ const NavbarPage = () => {
     };
 
     applyTheme();
+  }, []);
 
+  useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
@@ -148,6 +166,8 @@ const NavbarPage = () => {
             </span>
           </Link>
 
+          {user?.role === "customer" && <CustomerNotifications />}
+
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
@@ -159,37 +179,107 @@ const NavbarPage = () => {
 
           {user ? (
             <>
-              {/* Profile Circle */}
-              <Link
-                href={getProfileHref(user)}
-                aria-label="My Profile"
-                title={user.name || "My Profile"}
-                className="ml-1 h-10 w-10 overflow-hidden rounded-full ring-2 ring-[#FEC447]/60 transition hover:ring-[#FEC447]"
-              >
-                {user.image ? (
-                  <Image
-                    src={user.image}
-                    alt={user.name || "Profile"}
-                    width={40}
-                    height={40}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center bg-[#FEC447] text-xs font-bold text-black">
-                    {getInitials(user.name)}
+              {/* Profile Dropdown */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen((p) => !p)}
+                  aria-label="My Profile"
+                  title={user.name || "My Profile"}
+                  className="ml-1 flex items-center gap-1.5 rounded-full ring-2 ring-[#FEC447]/60 transition hover:ring-[#FEC447]"
+                >
+                  <span className="h-10 w-10 overflow-hidden rounded-full">
+                    {user.image ? (
+                      <Image
+                        src={user.image}
+                        alt={user.name || "Profile"}
+                        width={40}
+                        height={40}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center bg-[#FEC447] text-xs font-bold text-black">
+                        {getInitials(user.name)}
+                      </span>
+                    )}
                   </span>
-                )}
-              </Link>
+                  <ChevronDown
+                    size={14}
+                    className={`hidden transition-transform sm:block ${profileOpen ? "rotate-180" : ""} ${isDark ? "text-zinc-300" : "text-zinc-600"}`}
+                  />
+                </button>
 
-              {/* Logout */}
-              <button
-                onClick={handleSignOut}
-                disabled={loggingOut}
-                className="hidden items-center gap-2 rounded-full border border-zinc-300 px-4 py-2.5 text-sm font-bold transition hover:border-red-400 hover:text-red-500 sm:flex dark:border-white/15 dark:hover:border-red-400 dark:hover:text-red-400"
-              >
-                <LogOut size={16} />
-                {loggingOut ? "Logging out..." : "Logout"}
-              </button>
+                {/* Dropdown Panel */}
+                {profileOpen && (
+                  <div
+                    className={`absolute right-0 top-14 z-50 w-56 rounded-2xl border shadow-xl ${
+                      isDark
+                        ? "border-white/10 bg-[#18181b]"
+                        : "border-zinc-200 bg-white"
+                    }`}
+                  >
+                    {/* User info */}
+                    <div className="border-b px-4 py-3 border-zinc-200 dark:border-white/10">
+                      <p className={`truncate text-sm font-bold ${isDark ? "text-white" : "text-zinc-900"}`}>
+                        {user.name || "User"}
+                      </p>
+                      <p className="truncate text-xs text-zinc-500">
+                        {user.email || ""}
+                      </p>
+                    </div>
+
+                    <div className="p-2">
+                      {/* Dashboard */}
+                      <Link
+                        href={getProfileHref(user)}
+                        onClick={() => setProfileOpen(false)}
+                        className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                          isDark
+                            ? "text-zinc-300 hover:bg-white/5 hover:text-white"
+                            : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+                        }`}
+                      >
+                        <LayoutDashboard size={16} className="text-[#FEC447]" />
+                        Dashboard
+                      </Link>
+
+                      {/* Profile Settings */}
+                      <Link
+                        href={
+                          user.role === "vendor"
+                            ? "/dashboard/vendor/profile"
+                            : user.role === "admin"
+                              ? "/dashboard/admin/settings"
+                              : "/customer/profile"
+                        }
+                        onClick={() => setProfileOpen(false)}
+                        className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                          isDark
+                            ? "text-zinc-300 hover:bg-white/5 hover:text-white"
+                            : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
+                        }`}
+                      >
+                        <Settings size={16} className="text-zinc-400" />
+                        Profile Settings
+                      </Link>
+
+                      {/* Logout */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          handleSignOut();
+                        }}
+                        disabled={loggingOut}
+                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-red-500 transition hover:bg-red-500/10 disabled:opacity-60"
+                      >
+                        <LogOut size={16} />
+                        {loggingOut ? "Logging out..." : "Logout"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <Link

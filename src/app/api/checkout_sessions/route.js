@@ -9,6 +9,36 @@ export async function POST(req) {
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const userEmail = body?.userEmail?.trim();
 
+    if (body?.orderType === "vendor_subscription") {
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        ...(userEmail && { customer_email: userEmail }),
+        line_items: [
+          {
+            price_data: {
+              currency: "bdt",
+              product_data: {
+                name: "Pizzora Vendor Subscription — 30 Days Premium",
+                description:
+                  "Premium vendor access for 30 days. Renew before expiry to keep your vendor status.",
+              },
+              unit_amount: 3000000, // ৳30,000 in paisa
+            },
+            quantity: 1,
+          },
+        ],
+        metadata: {
+          orderType: "vendor_subscription",
+          userEmail: userEmail || "",
+          userId: body?.userId || "",
+        },
+        success_url: `${origin}/dashboard/vendor/subscription?renewed=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/dashboard/vendor/subscription?canceled=true`,
+      });
+
+      return NextResponse.json({ url: session.url });
+    }
+
     if (body?.orderType === "vendor_application") {
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
@@ -19,9 +49,9 @@ export async function POST(req) {
               currency: "bdt",
               product_data: {
                 name: "Become a Vendor",
-                description: `Vendor onboarding fee for ${body?.shopName || "Pizzora Kitchen"}`,
+                description: `Vendor onboarding fee for ${body?.shopName}`,
               },
-              unit_amount: Math.round((body?.amount || 3000) * 100),
+              unit_amount: Math.round((body?.amount) * 100),
             },
             quantity: 1,
           },
